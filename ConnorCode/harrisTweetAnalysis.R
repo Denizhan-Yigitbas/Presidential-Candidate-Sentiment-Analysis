@@ -86,7 +86,6 @@ nrc <- sentiments %>%
 # but this requires we have a dataset of all candidates tweets in one
 # as a proof of concept, i've made the tweets grouped by time of creation (created) 
 
-# the following is wrong
 harrissources <- harris_tweet_words %>%
   group_by(created) %>%
   mutate(total_words = n()) %>%
@@ -103,20 +102,27 @@ harris_by_source_sentiment <- harris_tweet_words %>%
   summarize(words = sum(n)) %>%
   ungroup()
 
+# what harris_by_source_sentiment tells us is the frequency of a given word's sentiment on a given time/day (tweet)
+# "words" captures the number of words of a given sentiment in a tweet
+# "total_words captures the total number of words in a tweet, excluding stop-words
+# for example, the tweet posted on 9/21/2018 at 21:29 o'clock was six words, 
+# and one word was coded trust, one word was positive, and one word was joy
+# re above: how to keep retweets/likes?
+
+# plot changes in sentiment over time
 test1 <- harris_by_source_sentiment %>% 
   group_by(sentiment) %>% 
-  mutate(percent = total_words/sum(total_words)) 
-ggplot(aes(x=created, y=percent, color = sentiment), data=test1) +
-  geom_line() 
+  mutate(percent = words/total_words) 
+ggplot(aes(x=month(created), y=percent, color = sentiment), data=test1) +
+  geom_col() 
+# this is maybe the right idea but?
 
-tweets %>%
-  count(source, hour = hour(with_tz(created, "EST"))) %>%
-  mutate(percent = n / sum(n)) %>%
-  ggplot(aes(hour, percent, color = source)) +
-  geom_line() +
-  scale_y_continuous(labels = percent_format()) +
-  labs(x = "Hour of day (EST)",
-       y = "% of tweets",
-       color = "")
+# find overall sentiment in tweets
+test2 <- harris_by_source_sentiment %>% 
+  group_by(sentiment) %>% 
+  mutate(percent = words/total_words) %>% 
+  summarise(mean=mean(percent))
 
-#lol
+test2
+# output: sentiment is positive 15% of the time, negative 11% of the time, evokes trust 11% of the time
+# fear 7% of the time, etc.
