@@ -106,15 +106,17 @@ harris_by_source_sentiment <- harris_tweet_words %>%
 test1 <- harris_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = total_words/sum(total_words)) 
-  ggplot(aes(x=created, y=percent, color = sentiment), data=test1) +
+ggplot(aes(x=created, y=percent, color = sentiment), data=test1) +
   geom_line() 
-  
-  tweets %>%
-    count(source, hour = hour(with_tz(created, "EST"))) %>%
-    mutate(percent = n / sum(n)) %>%
-    ggplot(aes(hour, percent, color = source)) +
-    geom_line() +
-    scale_y_continuous(labels = percent_format()) +
-    labs(x = "Hour of day (EST)",
-         y = "% of tweets",
-         color = "")
+
+tweets %>%
+  count(source, hour = hour(with_tz(created, "EST"))) %>%
+  mutate(percent = n / sum(n)) %>%
+  ggplot(aes(hour, percent, color = source)) +
+  geom_line() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(x = "Hour of day (EST)",
+       y = "% of tweets",
+       color = "")
+
+#lol
