@@ -24,18 +24,18 @@ access_secret <- "Zfr7jCXX5iM7N0VlRqtvmJ46RqBukmt2Q4QUKnxsn7g2h"
 
 setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
 Yes
-harristweets <- userTimeline("KamalaHarris", n = 3200)
-harris <- tbl_df(map_df(harristweets, as.data.frame))
+yangtweets <- userTimeline("AndrewYang", n = 3200)
+yang <- tbl_df(map_df(yangtweets, as.data.frame))
 #roadblock: tweet text gets truncated if > 140 characters; how to fix?
 
-head(harris)
+head(yang)
 
 #we can clean data pretty significantly
 
-harris <- harris %>%
+yang <- yang %>%
   select(id, text, created, favoriteCount, retweetCount)
 
-harris
+yang
 
 #tbh no idea what "id" is, but this leaves us with:
 ## text of tweet
@@ -45,7 +45,7 @@ harris
 
 #tweet per time of day
 
-harris %>%
+yang %>%
   count(n(), hour = hour(with_tz(created, "EST"))) %>%
   mutate(percent = n / sum(n)) %>% 
   ggplot(aes(hour, percent)) +
@@ -57,52 +57,52 @@ harris %>%
 # comparison of words
 
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
-harris_tweet_words <- harris %>%
+yang_tweet_words <- yang %>%
   filter(!str_detect(text, '^"')) %>%
   mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
   unnest_tokens(word, text, token = "regex", pattern = reg) %>%
   filter(!word %in% stop_words$word,
          str_detect(word, "[a-z]"))
 
-harris_tweet_words %>% count(word) %>% 
+yang_tweet_words %>% count(word) %>% 
   arrange(desc(n)) %>% 
-  filter(n>40) %>% 
-  filter(word!="day", word!="time") %>% 
+  filter(n>5) %>% 
+  filter(word!="time", word!="coming",word!="ve") %>% 
   ggplot(aes(x=reorder(word,n), y=n)) +
   geom_bar(stat="identity") +
   coord_flip() +
   xlab("Word") +
   ylab("Occurences") +
-  ggtitle("Kamala Harris' Most Frequently Used Words on Twitter", subtitle="Excluding common 'stop words'") 
+  ggtitle("Andrew Yang's Most Frequently Used Words on Twitter", subtitle="Excluding common 'stop words'") 
 
 ###SENTIMENT ANALYSIS
 nrc <- sentiments %>%
   filter(lexicon == "nrc") %>%
   dplyr::select(word, sentiment)
 
-### the code below initially grouped harris' tweets by source
+### the code below initially grouped yang' tweets by source
 ## Because we are grouping by candidate and not source, we will need to tweak 
 # group_by(source) should be group_by(candidate)
 # but this requires we have a dataset of all candidates tweets in one
 # as a proof of concept, i've made the tweets grouped by time of creation (created) 
 
-harrissources <- harris_tweet_words %>%
+yangsources <- yang_tweet_words %>%
   group_by(created) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
   distinct(id, created, total_words)
 
-harris_by_source_sentiment <- harris_tweet_words %>%
+yang_by_source_sentiment <- yang_tweet_words %>%
   inner_join(nrc, by = "word") %>%
   count(sentiment, id) %>%
   ungroup() %>%
   complete(sentiment, id, fill = list(n = 0)) %>%
-  inner_join(harrissources) %>%
+  inner_join(yangsources) %>%
   group_by(created, sentiment, total_words) %>%
   summarize(words = sum(n)) %>%
   ungroup()
 
-# what harris_by_source_sentiment tells us is the frequency of a given word's sentiment on a given time/day (tweet)
+# what yang_by_source_sentiment tells us is the frequency of a given word's sentiment on a given time/day (tweet)
 # "words" captures the number of words of a given sentiment in a tweet
 # "total_words captures the total number of words in a tweet, excluding stop-words
 # for example, the tweet posted on 9/21/2018 at 21:29 o'clock was six words, 
@@ -110,7 +110,7 @@ harris_by_source_sentiment <- harris_tweet_words %>%
 # re above: how to keep retweets/likes?
 
 # plot changes in sentiment over time
-harristest1 <- harris_by_source_sentiment %>% 
+yangtest1 <- yang_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = words/total_words) 
 ggplot(aes(x=month(created), y=percent, fill = sentiment), data=test1) +
@@ -118,7 +118,7 @@ ggplot(aes(x=month(created), y=percent, fill = sentiment), data=test1) +
 # this is maybe the right idea but?
 
 # find overall sentiment in tweets
-harristest2 <- harris_by_source_sentiment %>% 
+yangtest2 <- yang_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = words/total_words) %>% 
   summarise(mean=mean(percent)) %>% 
@@ -126,6 +126,6 @@ harristest2 <- harris_by_source_sentiment %>%
   geom_col() +
   coord_flip()
 
-harristest2
+yangtest2
 # output: sentiment is positive 15% of the time, negative 11% of the time, evokes trust 11% of the time
 # fear 7% of the time, etc.
