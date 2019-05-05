@@ -26,6 +26,7 @@ setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
 Yes
 harristweets <- userTimeline("KamalaHarris", n = 3200)
 harris <- tbl_df(map_df(harristweets, as.data.frame))
+harris$candidate <- "Harris"
 #roadblock: tweet text gets truncated if > 140 characters; how to fix?
 
 head(harris)
@@ -33,7 +34,7 @@ head(harris)
 #we can clean data pretty significantly
 
 harris <- harris %>%
-  select(id, text, created, favoriteCount, retweetCount)
+  select(id, text, created, favoriteCount, retweetCount, candidate)
 
 harris
 
@@ -90,7 +91,7 @@ harrissources <- harris_tweet_words %>%
   group_by(created) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
-  distinct(id, created, total_words)
+  distinct(id, created, total_words, candidate)
 
 harris_by_source_sentiment <- harris_tweet_words %>%
   inner_join(nrc, by = "word") %>%
@@ -98,7 +99,7 @@ harris_by_source_sentiment <- harris_tweet_words %>%
   ungroup() %>%
   complete(sentiment, id, fill = list(n = 0)) %>%
   inner_join(harrissources) %>%
-  group_by(created, sentiment, total_words) %>%
+  group_by(candidate,created, sentiment, total_words) %>%
   summarize(words = sum(n)) %>%
   ungroup()
 
@@ -113,9 +114,9 @@ harris_by_source_sentiment <- harris_tweet_words %>%
 harristest1 <- harris_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = words/total_words) 
-ggplot(aes(x=month(created), y=percent, fill = sentiment), data=test1) +
+ggplot(aes(x=month(created), y=percent, fill = sentiment), data=harristest1) +
   geom_col() 
-# this is maybe the right idea but?
+# this is maybe the right idea but? how do percents > 100?
 
 # find overall sentiment in tweets
 harristest2 <- harris_by_source_sentiment %>% 

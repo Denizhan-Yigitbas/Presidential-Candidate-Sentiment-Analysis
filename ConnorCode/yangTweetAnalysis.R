@@ -26,6 +26,7 @@ setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
 Yes
 yangtweets <- userTimeline("AndrewYang", n = 3200)
 yang <- tbl_df(map_df(yangtweets, as.data.frame))
+yang$candidate <- "Yang"
 #roadblock: tweet text gets truncated if > 140 characters; how to fix?
 
 head(yang)
@@ -33,7 +34,7 @@ head(yang)
 #we can clean data pretty significantly
 
 yang <- yang %>%
-  select(id, text, created, favoriteCount, retweetCount)
+  select(id, text, created, favoriteCount, retweetCount, candidate)
 
 yang
 
@@ -90,7 +91,7 @@ yangsources <- yang_tweet_words %>%
   group_by(created) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
-  distinct(id, created, total_words)
+  distinct(id, created, total_words, candidate)
 
 yang_by_source_sentiment <- yang_tweet_words %>%
   inner_join(nrc, by = "word") %>%
@@ -98,7 +99,7 @@ yang_by_source_sentiment <- yang_tweet_words %>%
   ungroup() %>%
   complete(sentiment, id, fill = list(n = 0)) %>%
   inner_join(yangsources) %>%
-  group_by(created, sentiment, total_words) %>%
+  group_by(candidate,created, sentiment, total_words) %>%
   summarize(words = sum(n)) %>%
   ungroup()
 
@@ -113,7 +114,7 @@ yang_by_source_sentiment <- yang_tweet_words %>%
 yangtest1 <- yang_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = words/total_words) 
-ggplot(aes(x=month(created), y=percent, fill = sentiment), data=test1) +
+ggplot(aes(x=date(created), y=percent, fill = sentiment), data=yangtest1) +
   geom_col() 
 # this is maybe the right idea but?
 
@@ -127,5 +128,5 @@ yangtest2 <- yang_by_source_sentiment %>%
   coord_flip()
 
 yangtest2
-# output: sentiment is positive 15% of the time, negative 11% of the time, evokes trust 11% of the time
-# fear 7% of the time, etc.
+# output: sentiment is positive 17% of the time, anticipatory 11% of the time, evokes trust 11% of the time
+# joy 7% of the time, etc.
