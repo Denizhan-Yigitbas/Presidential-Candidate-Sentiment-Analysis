@@ -23,7 +23,7 @@ access_token <- "723047418-ssrsLkCiMNg1zGrJCVTL6HhPeUSllMf8KrQ6W2TA"
 access_secret <- "Zfr7jCXX5iM7N0VlRqtvmJ46RqBukmt2Q4QUKnxsn7g2h"
 
 setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
-Yes
+
 harristweets <- userTimeline("KamalaHarris", n = 3200)
 harris <- tbl_df(map_df(harristweets, as.data.frame))
 harris$candidate <- "Harris"
@@ -34,7 +34,7 @@ head(harris)
 #we can clean data pretty significantly
 
 harris <- harris %>%
-  select(id, text, created, favoriteCount, retweetCount, candidate)
+  select(id, text, createdDate, favoriteCount, retweetCount, candidate)
 
 harris
 
@@ -47,7 +47,7 @@ harris
 #tweet per time of day
 
 harris %>%
-  count(n(), hour = hour(with_tz(created, "EST"))) %>%
+  count(n(), hour = hour(with_tz(createdDate, "EST"))) %>%
   mutate(percent = n / sum(n)) %>% 
   ggplot(aes(hour, percent)) +
   geom_line() +
@@ -85,13 +85,13 @@ nrc <- sentiments %>%
 ## Because we are grouping by candidate and not source, we will need to tweak 
 # group_by(source) should be group_by(candidate)
 # but this requires we have a dataset of all candidates tweets in one
-# as a proof of concept, i've made the tweets grouped by time of creation (created) 
+# as a proof of concept, i've made the tweets grouped by time of creation (createdDate) 
 
 harrissources <- harris_tweet_words %>%
-  group_by(created) %>%
+  group_by(createdDate) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
-  distinct(id, created, total_words, candidate)
+  distinct(id, createdDate, total_words, candidate)
 
 harris_by_source_sentiment <- harris_tweet_words %>%
   inner_join(nrc, by = "word") %>%
@@ -99,7 +99,7 @@ harris_by_source_sentiment <- harris_tweet_words %>%
   ungroup() %>%
   complete(sentiment, id, fill = list(n = 0)) %>%
   inner_join(harrissources) %>%
-  group_by(candidate,created, sentiment, total_words) %>%
+  group_by(candidate,createdDate, sentiment, total_words) %>%
   summarize(words = sum(n)) %>%
   ungroup()
 
@@ -114,7 +114,7 @@ harris_by_source_sentiment <- harris_tweet_words %>%
 harristest1 <- harris_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = words/total_words) 
-ggplot(aes(x=month(created), y=percent, fill = sentiment), data=harristest1) +
+ggplot(aes(x=month(createdDate), y=percent, fill = sentiment), data=harristest1) +
   geom_col() 
 # this is maybe the right idea but? how do percents > 100?
 
