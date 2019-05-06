@@ -1,5 +1,9 @@
 import tweepy
 import preprocessor
+import csv
+from textblob import TextBlob
+import re
+
 
 
 class TwitterUser():
@@ -23,7 +27,7 @@ class TwitterUser():
         Returns all data about the most recent 3240 tweets and retweets for the TwitterUser
         """
         
-        print("Retrieving data for @%s.... \n" % self.get_twitter_handle())
+        print("Retrieving data for @%s...." % self.get_twitter_handle())
         
         # Twitter only allows access to a users most recent 3240 tweets with this method
         # authorize twitter, initialize tweepy
@@ -57,7 +61,8 @@ class TwitterUser():
             oldest = allTweets[-1].id - 1
         
             # print("...%s tweets downloaded so far" % (len(allTweets)))
-    
+        
+        print("Data Retrieval Successful! \n")
         return allTweets
     
     def get_all_tweet_data(self):
@@ -228,6 +233,59 @@ class TwitterUser():
             cleanedRetweets.append(cleaned)
         return cleanedRetweets
     
+    # new
+    def sentimentAnalysis(self, text):
+        analyzed = TextBlob(text)
+        polarity = analyzed.sentiment.polarity
+        return polarity
+    
+    # new
+    def prepare_cleaned_csv_data(self):
+        tweetId = []
+        tweetText = []
+        tweetDate = []
+        tweetFavCount = []
+        tweetRetCount = []
+        tweetPolarity = []
+        tweetData = self.get_all_tweet_data()
+        for tweet in tweetData:
+            cleanedText = preprocessor.clean(tweet.full_text)
+            if cleanedText == '':
+                continue
+            tweetId.append(tweet.id_str)
+            tweetText.append(cleanedText)
+            tweetDate.append(tweet.created_at.date())
+            tweetFavCount.append(tweet.favorite_count)
+            tweetRetCount.append(tweet.retweet_count)
+            tweetPolarity.append(self.sentimentAnalysis(cleanedText))
+        return tweetId, tweetText, tweetDate, tweetFavCount, tweetRetCount, tweetPolarity
+    
+    
+    # new
+    def export_to_csv_cleaned(self):
+        idData, textData, dateData, favCountData, retweetCountData, polarityData = self.prepare_cleaned_csv_data()
+        dataSet = list(zip(idData, textData, dateData, favCountData, retweetCountData, polarityData))
+        #dataSet = [[tweet.id_str, tweet.full_text, tweet.created_at.date(), tweet.favorite_count, tweet.retweet_count] for tweet in self.allTweets]
+        with open('%s_tweets.csv' % self.twitterHandle, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(["id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity"])
+            writer.writerows(dataSet)
+
+    # def clean_tweet(self, tweet):
+    #     '''
+    #     Utility function to clean tweet text by removing links, special characters
+    #     using simple regex statements.
+    #     '''
+    #     return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) | (\w+:\ / \ / \S+)", " ", tweet).split())
+    #
+    # def test(self):
+    #     t = self.tweet_only_text()
+    #     l = []
+    #     for tw in t:
+    #         l.append(self.clean_tweet(tw))
+    #     for i in l:
+    #         print(i)
+    #
     # # transform the tweepy tweets into a 2D array that will populate the csv
     # outtweets = [[tweet.id_str, tweet.created_at, tweet.text.encode("utf-8")] for tweet in allTweets]
     #
@@ -272,6 +330,13 @@ consumer_key = 'fsIJrsm2M2H7EqhBTAY2L2FE6'
 consumer_secret = 'pEImfs7hw6OXPA3coF4ySPq5tkzAMOXfjfYVRpPUQlRUbDHVos'
 access_key = '723047418-ssrsLkCiMNg1zGrJCVTL6HhPeUSllMf8KrQ6W2TA'
 access_secret = 'Zfr7jCXX5iM7N0VlRqtvmJ46RqBukmt2Q4QUKnxsn7g2h'
-
+#
 Connor = TwitterUser('CL_Rothschild', consumer_key, consumer_secret, access_key, access_secret)
+# Denizhan = TwitterUser('denizhany_9', consumer_key, consumer_secret, access_key, access_secret)
 
+Connor.export_to_csv_cleaned()
+# Denizhan.export_to_csv_cleaned()
+
+# testSent = "I love this new product"
+# sent = TextBlob(testSent)
+# print(sent.sentiment)
