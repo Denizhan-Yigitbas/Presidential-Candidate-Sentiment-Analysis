@@ -34,7 +34,7 @@ head(yang)
 #we can clean data pretty significantly
 
 yang <- yang %>%
-  select(id, text, created, favoriteCount, retweetCount, candidate)
+  select(id, text, createdDate, favoriteCount, retweetCount, candidate)
 
 yang
 
@@ -47,7 +47,7 @@ yang
 #tweet per time of day
 
 yang %>%
-  count(n(), hour = hour(with_tz(created, "EST"))) %>%
+  count(n(), hour = hour(with_tz(createdDate, "EST"))) %>%
   mutate(percent = n / sum(n)) %>% 
   ggplot(aes(hour, percent)) +
   geom_line() +
@@ -85,13 +85,13 @@ nrc <- sentiments %>%
 ## Because we are grouping by candidate and not source, we will need to tweak 
 # group_by(source) should be group_by(candidate)
 # but this requires we have a dataset of all candidates tweets in one
-# as a proof of concept, i've made the tweets grouped by time of creation (created) 
+# as a proof of concept, i've made the tweets grouped by time of creation (createdDate) 
 
 yangsources <- yang_tweet_words %>%
-  group_by(created) %>%
+  group_by(createdDate) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
-  distinct(id, created, total_words, candidate)
+  distinct(id, createdDate, total_words, candidate)
 
 yang_by_source_sentiment <- yang_tweet_words %>%
   inner_join(nrc, by = "word") %>%
@@ -99,7 +99,7 @@ yang_by_source_sentiment <- yang_tweet_words %>%
   ungroup() %>%
   complete(sentiment, id, fill = list(n = 0)) %>%
   inner_join(yangsources) %>%
-  group_by(candidate,created, sentiment, total_words) %>%
+  group_by(candidate,createdDate, sentiment, total_words) %>%
   summarize(words = sum(n)) %>%
   ungroup()
 
@@ -114,7 +114,7 @@ yang_by_source_sentiment <- yang_tweet_words %>%
 yangtest1 <- yang_by_source_sentiment %>% 
   group_by(sentiment) %>% 
   mutate(percent = words/total_words) 
-ggplot(aes(x=date(created), y=percent, fill = sentiment), data=yangtest1) +
+ggplot(aes(x=date(createdDate), y=percent, fill = sentiment), data=yangtest1) +
   geom_col() 
 # this is maybe the right idea but?
 
