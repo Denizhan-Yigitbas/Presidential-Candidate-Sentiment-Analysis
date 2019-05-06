@@ -9,7 +9,7 @@ class TwitterUser():
         self.consumer_secret = consumer_secret
         self.access_key = access_key
         self.access_secret = access_secret
-        self.allTweets = self.get_all_tweets()
+        self.allTweets = self.get_all_twitter_activity()
 
     def get_twitter_handle(self):
         """
@@ -18,9 +18,9 @@ class TwitterUser():
     
         return self.twitterHandle
     
-    def get_all_tweets(self):
+    def get_all_twitter_activity(self):
         """
-        Returns all data about the most recent 3240 tweets for the TwitterUser
+        Returns all data about the most recent 3240 tweets and retweets for the TwitterUser
         """
         
         print("Retrieving data for @%s.... \n" % self.get_twitter_handle())
@@ -59,6 +59,71 @@ class TwitterUser():
             # print("...%s tweets downloaded so far" % (len(allTweets)))
     
         return allTweets
+    
+    def get_all_tweet_data(self):
+        """
+        Returns a list of all data for only personal tweets by TwitterUser
+        """
+        tweets = []
+        for tweet in self.allTweets:
+            # checks to make sure 'tweet' is not a retweet
+            if not hasattr(tweet, 'retweeted_status'):
+                tweets.append(tweet)
+        return tweets
+    
+    def get_all_retweet_data(self):
+        """
+        Returns a list of all data for only retweets by TwitterUser
+        """
+        retweets = []
+        for retweet in self.allTweets:
+            # checks to make sure 'tweet' is not a retweet
+            if hasattr(retweet, 'retweeted_status'):
+                retweets.append(retweet)
+        return retweets
+    
+    def get_oldest_activity_date(self):
+        """
+        Returns date of the oldest tweet OR retweet by the TwitterUser 
+        """
+        lastIndex = len(self.allTweets) - 1
+        return self.allTweets[lastIndex].created_at.date()
+    
+    def get_newest_activity_date(self):
+        """
+        Returns date of the newest tweet OR retweet by the TwitterUser
+        """
+        return self.allTweets[0].created_at.date()
+    
+    def get_oldest_tweet_date(self):
+        """
+        Returns date of the oldest personal tweet by the TwitterUser
+        """
+        tweetData= self.get_all_tweet_data()
+        lastIndex = len(tweetData) - 1
+        return tweetData[lastIndex].created_at.date()
+        
+    def get_newest_tweet_date(self):
+        """
+        Returns date of the newest personal tweet by the TwitterUser 
+        """
+        tweetData = self.get_all_tweet_data()
+        return tweetData[0].created_at.date()
+    
+    def get_oldest_retweet_date(self):
+        """
+        Returns date of the oldest retweet by the TwitterUser
+        """
+        retweetData = self.get_all_retweet_data()
+        lastIndex = len(retweetData) - 1
+        return retweetData[lastIndex].created_at.date()
+        
+    def get_newest_retweet_date(self):
+        """
+        Returns date of the newest retweet by the TwitterUser
+        """
+        retweetData = self.get_all_retweet_data()
+        return retweetData[0].created_at.date()
         
     def num_tot_tweets_retrieved(self):
         """
@@ -83,7 +148,7 @@ class TwitterUser():
         """
         Returns the total number of retweets that are retrieved
         """
-        #allTweets = self.get_all_tweets()
+        #allTweets = self.get_all_twitter_activity()
         retweetCount = 0
         for tweet in self.allTweets:
             # checks to make sure 'tweet' is not a retweet
@@ -113,10 +178,9 @@ class TwitterUser():
         This includes everything in text content(emoji, url, etc.)
         """
         tweetText = []
-        for tweet in self.allTweets:
-            # checks to make sure 'tweet' is not a retweet
-            if not hasattr(tweet, 'retweeted_status'):
-                tweetText.append(tweet.full_text)
+        tweetData = self.get_all_tweet_data()
+        for tweet in tweetData:
+            tweetText.append(tweet.full_text)
         return tweetText
     
     def tweet_only_text_cleaned(self):
@@ -141,12 +205,11 @@ class TwitterUser():
         Returns a list of the text contents of the TwitterUser's RETWEETS.
         This includes everything in text content(emoji, url, etc.)
         """
-        tweetText = []
-        for retweet in self.allTweets:
-            # checks to make sure 'tweet' is a retweet
-            if hasattr(retweet, 'retweeted_status'):
-                tweetText.append(retweet.retweeted_status.full_text)
-        return tweetText
+        retweetText = []
+        retweetData = self.get_all_retweet_data()
+        for retweet in retweetData:
+            retweetText.append(retweet.retweeted_status.full_text)
+        return retweetText
 
     def retweet_only_text_cleaned(self):
         """
@@ -165,7 +228,6 @@ class TwitterUser():
             cleanedRetweets.append(cleaned)
         return cleanedRetweets
     
-
     # # transform the tweepy tweets into a 2D array that will populate the csv
     # outtweets = [[tweet.id_str, tweet.created_at, tweet.text.encode("utf-8")] for tweet in allTweets]
     #
@@ -213,6 +275,3 @@ access_secret = 'Zfr7jCXX5iM7N0VlRqtvmJ46RqBukmt2Q4QUKnxsn7g2h'
 
 Connor = TwitterUser('CL_Rothschild', consumer_key, consumer_secret, access_key, access_secret)
 
-print(Connor.get_twitter_handle())
-
-text = Connor.tweet_only_text()
