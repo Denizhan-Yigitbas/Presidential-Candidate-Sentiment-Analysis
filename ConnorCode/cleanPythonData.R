@@ -1,7 +1,23 @@
-# for cleaning Tweets from Python API pull
+### STEP ONE: CLEAN DATA FROM PYTHON API PULL, MAKE SUBSETS
 
+rm(list=ls())
+library(dplyr)
+library(purrr)
+library(twitteR)
+library(tidyr)
+library(lubridate)
+library(scales)
+library(tidyverse)
+library(ggplot2)
+library(tidytext)
 library(readr)
-uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
+library(sentimentr)
+library(dplyr)
+library(syuzhet)
+library(broom)
+
+#in actual,"customTwitterUsersCombinedUncleaned.csv" not "sampleSet"
+uncleaned <- read_csv("sampleSet.csv")
 
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 
@@ -9,17 +25,15 @@ cleaned <- uncleaned %>%
   filter(!str_detect(text, '^"')) %>%
   mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>% 
   filter(!is.na(text)) %>% 
-  filter(text!="")
+  filter(text!="") 
 
-str_replace(cleaned, "\u2014", " ")
+cleaned$text <- str_replace(cleaned$text, "—", " ")
 
-cleaned
-View(uncleaned)
-
-no_retweets <- cleaned %>% 
+tweets <- cleaned %>% 
   filter(tweetBinary == 1)
 
-no_retweets <- cleaned %>% 
-  filter(tweetBinary == 1)
+retweets <- cleaned %>% 
+  filter(tweetBinary == 0)
 
-View(no_retweets)
+tweets_mention_trump <- tweets %>% 
+  filter(str_detect(tweets$text, "Trump")==TRUE)
