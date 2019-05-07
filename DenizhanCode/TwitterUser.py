@@ -65,6 +65,16 @@ class TwitterUser():
         print("Data Retrieval Successful! \n")
         return allTweets
     
+    # new
+    def is_tweet(self, tweet):
+        """
+        Given a tweet, this will return if this is a tweet or a retweet
+        """
+        if not hasattr(tweet, 'retweeted_status'):
+            return True
+        else:
+            return False
+        
     def get_all_tweet_data(self):
         """
         Returns a list of all data for only personal tweets by TwitterUser
@@ -239,8 +249,12 @@ class TwitterUser():
         polarity = analyzed.sentiment.polarity
         return polarity
     
-    # new
-    def prepare_cleaned_csv_data(self):
+    #new
+    def prepare_cleaned_csv_tweet_data(self):
+        """
+        Returns 7 lists of data for only tweets that will be used as columns 
+        for the csv that will be created using export_to_csv_cleaned_tweets()
+        """
         tweetId = []
         tweetText = []
         tweetDate = []
@@ -258,85 +272,146 @@ class TwitterUser():
             tweetFavCount.append(tweet.favorite_count)
             tweetRetCount.append(tweet.retweet_count)
             tweetPolarity.append(self.sentimentAnalysis(cleanedText))
-        return tweetId, tweetText, tweetDate, tweetFavCount, tweetRetCount, tweetPolarity
-    
+        candidate = [self.twitterHandle] * len(tweetId)
+        return candidate, tweetId, tweetText, tweetDate, tweetFavCount, tweetRetCount, tweetPolarity
     
     # new
-    def export_to_csv_cleaned(self):
-        idData, textData, dateData, favCountData, retweetCountData, polarityData = self.prepare_cleaned_csv_data()
-        dataSet = list(zip(idData, textData, dateData, favCountData, retweetCountData, polarityData))
-        #dataSet = [[tweet.id_str, tweet.full_text, tweet.created_at.date(), tweet.favorite_count, tweet.retweet_count] for tweet in self.allTweets]
-        with open('%s_tweets.csv' % self.twitterHandle, 'w') as f:
+    def export_to_csv_cleaned_tweets(self):
+        """
+        Creates a csv file for only tweets with the following columns:
+        
+        twitterHandle | tweet id | tweet text | post date | fav count | retweet count | tweet polarity
+        """
+        candData, idData, textData, dateData, favCountData, retweetCountData, polarityData = self.prepare_cleaned_csv_tweet_data()
+        dataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData))
+        with open('%s_cleanedTweetsOnly.csv' % self.twitterHandle, 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(["id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity"])
+            writer.writerow(["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity"])
+            writer.writerows(dataSet)
+        
+    # new
+    def prepare_all_data_csv_cleaned(self):
+        """
+        Returns 8 lists of data for BOTH CLEANED tweets AND retweets that will be used as columns
+        for the csv that will be created using export_all_data_csv_cleaned()
+        """
+        tweetId = []
+        tweetText = []
+        tweetDate = []
+        tweetFavCount = []
+        tweetRetCount = []
+        tweetPolarity = []
+        tweetOrRetweet = []
+        tweetData = self.allTweets
+        for tweet in tweetData:
+            if self.is_tweet(tweet):
+                tweetOrRetweet.append(1)
+                cleanedText = preprocessor.clean(tweet.full_text)
+            else:
+                tweetOrRetweet.append(0)
+                cleanedText = preprocessor.clean(tweet.retweeted_status.full_text)
+            if cleanedText == '':
+                continue
+            tweetId.append(tweet.id_str)
+            tweetText.append(cleanedText)
+            tweetDate.append(tweet.created_at.date())
+            tweetFavCount.append(tweet.favorite_count)
+            tweetRetCount.append(tweet.retweet_count)
+            tweetPolarity.append(self.sentimentAnalysis(cleanedText))
+        candidate = [self.twitterHandle] * len(tweetId)
+        return candidate, tweetId, tweetText, tweetDate, tweetFavCount, tweetRetCount, tweetPolarity, tweetOrRetweet
+
+    # new
+    def export_all_data_csv_cleaned(self):
+        """
+        Creates a csv file for BOTH CLEANED tweets AND retweets with the following columns:
+
+        twitterHandle | tweet id | tweet text | post date | fav count | retweet count | tweet polarity | tweet or retweet
+        """
+        candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData \
+            = self.prepare_all_data_csv_cleaned()
+        dataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData))
+        with open('%s_allActivityCleaned.csv' % self.twitterHandle, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
             writer.writerows(dataSet)
 
-    # def clean_tweet(self, tweet):
-    #     '''
-    #     Utility function to clean tweet text by removing links, special characters
-    #     using simple regex statements.
-    #     '''
-    #     return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) | (\w+:\ / \ / \S+)", " ", tweet).split())
-    #
-    # def test(self):
-    #     t = self.tweet_only_text()
-    #     l = []
-    #     for tw in t:
-    #         l.append(self.clean_tweet(tw))
-    #     for i in l:
-    #         print(i)
-    #
-    # # transform the tweepy tweets into a 2D array that will populate the csv
-    # outtweets = [[tweet.id_str, tweet.created_at, tweet.text.encode("utf-8")] for tweet in allTweets]
-    #
-    # return outtweets
-    # dates = [[tweet.created_at] for tweet in allTweets]
-    # datesData = {}
-    # for d in dates:
-    #     month = d[0].month
-    #     year = d[0].year
-    #     if year == 2019:
-    #         if month not in datesData:
-    #             datesData[month] = 1
-    #         else:
-    #             datesData[month] += 1
-    #
-    # import matplotlib.pylab as plt
-    #
-    # lists = sorted(datesData.items())  # sorted by key, return a list of tuples
-    #
-    # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-    #
-    # x = ("Jan", "Feb", "Mar", "Apr", "May")
-    #
-    # plt.bar(x, y)
-    # plt.xlabel("Month")
-    # plt.xticks(rotation=70)
-    # plt.ylabel("Number of Tweets")
-    # plt.title("Bernie Sander Twitter Usage for 2019")
-    # plt.grid()
-    # plt.show()
-    #
-    # # print(len(outtweets))
-    # # # write the csv
-    # # with open('%s_tweets.csv' % screen_name, 'w') as f:
-    # #     writer = csv.writer(f)
-    # #     writer.writerow(["id", "created_at", "text"])
-    # #     writer.writerows(outtweets)
-    # #
-    # pass
+    # new
+    def prepare_all_data_csv_uncleaned(self):
+        """
+        Returns 8 lists of data for BOTH UNCLEANED tweets AND retweets that will be used as columns
+        for the csv that will be created using export_all_data_csv_uncleaned()
+        """
+        tweetId = []
+        tweetText = []
+        tweetDate = []
+        tweetFavCount = []
+        tweetRetCount = []
+        tweetPolarity = []
+        tweetOrRetweet = []
+        tweetData = self.allTweets
+        for tweet in tweetData:
+            if self.is_tweet(tweet):
+                tweetOrRetweet.append(1)
+                text = tweet.full_text
+            else:
+                tweetOrRetweet.append(0)
+                text = tweet.retweeted_status.full_text
+            tweetId.append(tweet.id_str)
+            tweetText.append(text)
+            tweetDate.append(tweet.created_at.date())
+            tweetFavCount.append(tweet.favorite_count)
+            tweetRetCount.append(tweet.retweet_count)
+            tweetPolarity.append(self.sentimentAnalysis(text))
+        candidate = [self.twitterHandle] * len(tweetId)
+        return candidate, tweetId, tweetText, tweetDate, tweetFavCount, tweetRetCount, tweetPolarity, tweetOrRetweet
+    
+    # new
+    def export_all_data_csv_uncleaned(self):
+        """
+        Creates a csv file for BOTH UNCLEANED tweets AND retweets with the following columns:
 
-consumer_key = 'fsIJrsm2M2H7EqhBTAY2L2FE6'
-consumer_secret = 'pEImfs7hw6OXPA3coF4ySPq5tkzAMOXfjfYVRpPUQlRUbDHVos'
-access_key = '723047418-ssrsLkCiMNg1zGrJCVTL6HhPeUSllMf8KrQ6W2TA'
-access_secret = 'Zfr7jCXX5iM7N0VlRqtvmJ46RqBukmt2Q4QUKnxsn7g2h'
-#
-Connor = TwitterUser('CL_Rothschild', consumer_key, consumer_secret, access_key, access_secret)
-# Denizhan = TwitterUser('denizhany_9', consumer_key, consumer_secret, access_key, access_secret)
+        twitterHandle | tweet id | tweet text | post date | fav count | retweet count | tweet polarity | tweet or retweet
+        """
+        candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData \
+            = self.prepare_all_data_csv_uncleaned()
+        dataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData))
+        with open('%s_allActivityUnCleaned.csv' % self.twitterHandle, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
+            writer.writerows(dataSet)
+        
 
-Connor.export_to_csv_cleaned()
-# Denizhan.export_to_csv_cleaned()
+# new
+def combinedCleanedCSV(TwitterUserArray):
+    """
+    Given a list of TwitterUser objects, this will create a single csv file that contains BOTH CLEANED tweets and retweets
+    of all the given TwitterUsers
+    """
+    finalDataSet = []
+    for user in TwitterUserArray:
+        candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData = user.prepare_all_data_csv_cleaned()
+        userDataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData))
+        finalDataSet.extend(userDataSet)
+    with open('customTwitterUsersCombinedCleaned.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
+        writer.writerows(finalDataSet)
 
-# testSent = "I love this new product"
-# sent = TextBlob(testSent)
-# print(sent.sentiment)
+# new
+def combinedUnCleanedCSV(TwitterUserArray):
+    """
+    Given a list of TwitterUser objects, this will create a single csv file that contains BOTH CLEANED tweets and retweets
+    of all the given TwitterUsers
+    """
+    finalDataSet = []
+    for user in TwitterUserArray:
+        candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData = user.prepare_all_data_csv_uncleaned()
+        userDataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData))
+        finalDataSet.extend(userDataSet)
+    with open('customTwitterUsersCombinedCleaned.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
+        writer.writerows(finalDataSet)
