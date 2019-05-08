@@ -17,7 +17,7 @@ library(syuzhet)
 library(broom)
 
 #in actual,"customTwitterUsersCombinedUncleaned.csv" not "sampleSet"
-uncleaned <- read_csv("sampleSet.csv")
+uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
 
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 
