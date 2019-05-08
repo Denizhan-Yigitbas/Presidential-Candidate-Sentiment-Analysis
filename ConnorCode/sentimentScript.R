@@ -22,12 +22,9 @@ library(broom)
 ## this is preferable due to valence shifters 
 # reference https://blog.exploratory.io/twitter-sentiment-analysis-scoring-by-sentence-b4d455de3560
 
-# add sentiment per tweet
+# add sentiment per tweet, move sentiment and tweet text to front of dataset
 tweets_w_sentiment <- tweets %>% 
-  mutate(sentiment = get_sentiment(text))
-
-# move sentiment and tweet text to front of dataset
-tweets_w_sentiment <- tweets_w_sentiment %>% 
+  mutate(sentiment = get_sentiment(text)) %>% 
   select(sentiment, polarity, text, everything())
 
 # extract the keywords responsible for sentiment coding??
@@ -84,7 +81,11 @@ by_candidate_sentiment_grouped <- by_candidate_sentiment %>%
   group_by(sentiment) %>% 
 ggplot(aes(x=reorder(sentiment,percent),y=percent, fill=sentiment)) +
   geom_col() +
-  facet_wrap(~candidate)
+  theme(axis.text.x=element_blank(),axis.ticks=element_blank()) +
+  facet_wrap(~candidate) +
+  ggtitle("Proportional Sentiment per Candidate") +
+  xlab(element_blank())+
+  ylab("Percent")
 
 by_candidate_sentiment_grouped
 
@@ -93,6 +94,22 @@ by_sentiment_candidate_grouped <- by_candidate_sentiment %>%
   group_by(candidate) %>% 
   ggplot(aes(x=candidate,y=percent, fill=candidate)) +
   geom_col() +
-  facet_wrap(~sentiment)
+  theme(axis.text.x=element_blank(),axis.ticks=element_blank()) +
+  facet_wrap(~sentiment) +
+  ggtitle("Proportional Sentiment per Candidate") +
+  xlab(element_blank())+
+  ylab("Percent")
 
 by_sentiment_candidate_grouped
+
+# interaction between sentiment and Tweet interactions
+
+polarity_vs_popularity <- tweets_w_sentiment %>%
+  group_by(candidate) %>% 
+  filter(favoriteCount<60000) %>% 
+  ggplot(aes(x=sentiment, y=favoriteCount, color=candidate)) +
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE)
+
+polarity_vs_popularity
+
