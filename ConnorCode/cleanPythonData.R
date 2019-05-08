@@ -37,3 +37,6 @@ retweets <- cleaned %>%
 
 tweets_mention_trump <- tweets %>% 
   filter(str_detect(tweets$text, "Trump")==TRUE)
+
+tweets$candidate <- recode(tweets$candidate, "amyklobuchar"="AmyKlobuchar")
+tweets$candidate <- recode(tweets$candidate, "ewarren"="EWarren")
