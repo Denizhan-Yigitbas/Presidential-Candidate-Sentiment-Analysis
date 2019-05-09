@@ -25,9 +25,11 @@ cleaned <- uncleaned %>%
   filter(!str_detect(text, '^"')) %>%
   mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>% 
   filter(!is.na(text)) %>% 
-  filter(text!="") 
-
-cleaned$text <- str_replace(cleaned$text, "—", " ")
+  filter(text!="") %>% 
+  mutate(text = str_replace_all(text, "@[A-Za-z0-9_]+[A-Za-z0-9-_]+", "")) %>% 
+  mutate(text = str_replace_all(text, "@", "")) %>% 
+  mutate(text = str_replace_all(text, "—", " ")) %>% 
+  mutate(text = str_replace_all(text, "http\\S+", ""))
 
 tweets <- cleaned %>% 
   filter(tweetBinary == 1)
@@ -38,5 +40,28 @@ retweets <- cleaned %>%
 tweets_mention_trump <- tweets %>% 
   filter(str_detect(tweets$text, "Trump")==TRUE)
 
-tweets$candidate <- recode(tweets$candidate, "amyklobuchar"="AmyKlobuchar")
-tweets$candidate <- recode(tweets$candidate, "ewarren"="EWarren")
+tweets$candidate <- recode(tweets$candidate, "amyklobuchar"="Amy Klobuchar")
+tweets$candidate <- recode(tweets$candidate, "ewarren"="Elizabeth Warren")
+tweets$candidate <- recode(tweets$candidate, "BetoORourke"="Beto O'Rourke")
+tweets$candidate <- recode(tweets$candidate, "JoeBiden"="Joe Biden")
+tweets$candidate <- recode(tweets$candidate, "JulianCastro"="Julian Castro")
+tweets$candidate <- recode(tweets$candidate, "TulsiGabbard"="Tulsi Gabbard")
+tweets$candidate <- recode(tweets$candidate, "PeteButtigieg"="Pete Buttigieg")
+tweets$candidate <- recode(tweets$candidate, "KamalaHarris"="Kamala Harris")
+tweets$candidate <- recode(tweets$candidate, "BernieSanders"="Bernie Sanders")
+tweets$candidate <- recode(tweets$candidate, "CoryBooker"="Cory Booker")
+tweets$candidate <- recode(tweets$candidate, "AndrewYang"="Andrew Yang")
+tweets$candidate <- recode(tweets$candidate, "SenGillibrand"="Kirsten Gillibrand")
+
+amyklobuchar <- subset(tweet_words, candidate=="Amy Klobuchar")
+andrewyang <- subset(tweet_words, candidate=="Andrew Yang")
+berniesanders <- subset(tweet_words, candidate=="Bernie Sanders")
+betoorourke <- subset(tweet_words, candidate=="Beto O'Rourke")
+corybooker <- subset(tweet_words, candidate=="Cory Booker")
+elizabethwarren <- subset(tweet_words, candidate=="Elizabeth Warren")
+joebiden <- subset(tweet_words, candidate=="Joe Biden")
+juliancastro <- subset(tweet_words, candidate=="Julian Castro")
+kamalaharris <- subset(tweet_words, candidate=="Kamala Harris")
+kirstengillibrand <- subset(tweet_words, candidate=="Kirsten Gillibrand")
+petebuttigieg <- subset(tweet_words, candidate=="Pete Buttigieg")
+tulsigabbard <- subset(tweet_words, candidate=="Tulsi Gabbard")
