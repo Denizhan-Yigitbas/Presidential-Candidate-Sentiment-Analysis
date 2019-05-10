@@ -137,7 +137,7 @@ polarity_vs_popularity_fav_summarised <- tweets_w_sentiment %>%
   xlab("Average Sentiment Score") +
   ggtitle("Relationship Between Tweet Sentiment and Favorites", 
           subtitle = "Per Candidate") +
-  scale_fill_discrete(label="Candidate")
+  theme(legend.position = "none")
 
 polarity_vs_popularity_fav_summarised
 
@@ -196,6 +196,6 @@ polarity_vs_popularity_rt_summarised <- tweets_w_sentiment %>%
   xlab("Average Sentiment Score") +
   ggtitle("Relationship Between Tweet Sentiment and Retweets",
           subtitle = "Per candidate") +
-  scale_fill_discrete(label="Candidate")
+  theme(legend.position = "none")
 
 polarity_vs_popularity_rt_summarised

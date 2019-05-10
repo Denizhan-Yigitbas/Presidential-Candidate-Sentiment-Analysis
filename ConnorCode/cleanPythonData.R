@@ -53,6 +53,13 @@ tweets$candidate <- recode(tweets$candidate, "CoryBooker"="Cory Booker")
 tweets$candidate <- recode(tweets$candidate, "AndrewYang"="Andrew Yang")
 tweets$candidate <- recode(tweets$candidate, "SenGillibrand"="Kirsten Gillibrand")
 
+# add polling data
+polling <- data.frame(candidate = c("Joe Biden", "Bernie Sanders", "Elizabeth Warren", "Kamala Harris", "Pete Buttigieg", "Beto O'Rourke", "Cory Booker", "Amy Klobuchar", "Tulsi Gabbard", "Julian Castro", "Andrew Yang", "Kirsten Gillibrand"), 
+                      polling = as.numeric(c(41.4, 14.6, 8.0, 7.0, 6.6,4.4,2.6,1.4,0.8,0.8,0.8,0.6)))
+polling
+tweets <- merge(tweets, polling,by="candidate")
+
+# subsets
 amyklobuchar <- subset(tweet_words, candidate=="Amy Klobuchar")
 andrewyang <- subset(tweet_words, candidate=="Andrew Yang")
 berniesanders <- subset(tweet_words, candidate=="Bernie Sanders")
