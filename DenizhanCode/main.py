@@ -1,4 +1,5 @@
 from TwitterUser import *
+import csv
 
 consumer_key = 'fsIJrsm2M2H7EqhBTAY2L2FE6'
 consumer_secret = 'pEImfs7hw6OXPA3coF4ySPq5tkzAMOXfjfYVRpPUQlRUbDHVos'
@@ -24,5 +25,6 @@ allCandidates = [Joe_Biden, Cory_Booker, Pete_Buttigieg, Julian_Castro, Tulsi_Ga
                  Kirsten_Gillibrand, Kamala_Harris, Amy_Klobuchar, Beto_ORourke, Bernie_Sanders,
                  Elizabeth_Warren, Andrew_Yang]
 
-combinedCleanedCSV(allCandidates)
-combinedUncleanedCSV(allCandidates)
+# combinedCleanedCSV(allCandidates)
+# combinedUncleanedCSV(allCandidates)
+# sample(allCandidates)
