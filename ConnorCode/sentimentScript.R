@@ -23,9 +23,10 @@ library(broom)
 # reference https://blog.exploratory.io/twitter-sentiment-analysis-scoring-by-sentence-b4d455de3560
 
 # add sentiment per tweet, move sentiment and tweet text to front of dataset
+# get_sentiment is from the syuzhet package, and by default uses the syuzhet dictionary 
 tweets_w_sentiment <- tweets %>% 
   mutate(sentiment = get_sentiment(text)) %>% 
-  select(sentiment, polarity, text, everything())
+  select(sentiment, text, everything())
 
 # extract the keywords responsible for sentiment coding??
 # below is not working; i need it to keep candidate name but its extracitng sentiment terms and keeping nothing else
