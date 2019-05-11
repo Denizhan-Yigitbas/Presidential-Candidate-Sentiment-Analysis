@@ -372,7 +372,6 @@ class TwitterUser():
             writer = csv.writer(f)
             writer.writerow(["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
             writer.writerows(dataSet)
-        
 
 def combinedCleanedCSV(TwitterUserArray):
     """
@@ -389,7 +388,7 @@ def combinedCleanedCSV(TwitterUserArray):
         writer.writerow(
             ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
         writer.writerows(finalDataSet)
-
+        
 def combinedUncleanedCSV(TwitterUserArray):
     """
     Given a list of TwitterUser objects, this will create a single csv file that contains BOTH UNCLEANED tweets and retweets
@@ -401,6 +400,30 @@ def combinedUncleanedCSV(TwitterUserArray):
         userDataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData))
         finalDataSet.extend(userDataSet)
     with open('customTwitterUsersCombinedUncleaned.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
+        writer.writerows(finalDataSet)
+
+def sample(TwitterUserArray, tweetsPerUser):
+    """
+    Given a list of TwitterUser objects, this will create a sample csv file that contains tweetsPerUser number of
+    BOTH UNCLEANED tweets and retweets of all the given TwitterUsers
+    """
+    finalDataSet = []
+    for user in TwitterUserArray:
+        candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData = user.prepare_all_data_csv_uncleaned()
+        candData = candData[:tweetsPerUser]
+        idData = idData[:tweetsPerUser]
+        textData = textData[:tweetsPerUser]
+        dateData = dateData[:tweetsPerUser]
+        favCountData = favCountData[:tweetsPerUser]
+        retweetCountData = retweetCountData[:tweetsPerUser]
+        polarityData = polarityData[:tweetsPerUser]
+        tweetOrRetData = tweetOrRetData[:tweetsPerUser]
+        userDataSet = list(zip(candData, idData, textData, dateData, favCountData, retweetCountData, polarityData, tweetOrRetData))
+        finalDataSet.extend(userDataSet)
+    with open('sampleSet.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(
             ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
