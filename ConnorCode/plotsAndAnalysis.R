@@ -20,7 +20,7 @@ library(ggrepel)
 tweets_per_candidate <- tweets_w_sentiment %>% 
   group_by(candidate) %>% 
   ggplot(aes(x=candidate)) +
-  geom_bar()
+  geom_bar() 
 
 tweets_per_candidate
 
@@ -74,7 +74,7 @@ by_sentiment_candidate_grouped <- by_candidate_sentiment %>%
   ggplot(aes(x=candidate,y=percent, fill=candidate)) +
   geom_col() +
   theme(axis.text.x=element_blank(),axis.ticks=element_blank()) +
-  facet_wrap(~sentiment, scales = "free") +
+  facet_wrap(~sentiment) +
   ggtitle("Proportional Sentiment per Candidate") +
   xlab(element_blank())+
   ylab("Percent") +
@@ -199,3 +199,30 @@ polarity_vs_popularity_rt_summarised <- tweets_w_sentiment %>%
   theme(legend.position = "none")
 
 polarity_vs_popularity_rt_summarised
+
+# To do: determine which words are associated with greater
+# numbers of favorites and retweets
+# https://www.tidytextmining.com/twitter.html#favorites-and-retweets
+
+# related to above, plot favs/RTs according to specific sentiment (e.g does anger sell?)
+
+# To do: plot relationship between current polling numbers and 
+# Tweet sentiment/favs/rts/etc.
+
+# To do: who is most likely to mention Trump? etc.
+
+# sentiment grouped by Tweets mentioning Trump and not 
+tweets_mention_trump_w_sentiment <- tweets_w_sentiment %>% 
+  mutate(mentiontrump = ifelse(str_detect(tweets_w_sentiment$text, "Trump")==TRUE,yes=1,no=0))
+
+sentiment_by_trump_mention <- tweets_mention_trump_w_sentiment %>% 
+  group_by(mentiontrump) %>% 
+  summarise(meansentiment = mean(sentiment)) %>% 
+  ggplot(aes(x=mentiontrump, y=meansentiment, fill=mentiontrump)) +
+  geom_col(show.legend = FALSE) +
+  ggtitle("Average Sentiment", subtitle = "Tweets that mention 'Trump' vs those that don't") +
+  ylab("Sentiment") +
+  xlab(element_blank()) +
+  scale_x_continuous(breaks=c(0,1), labels = c("Does Not Mention", "Does Mention"))
+  
+sentiment_by_trump_mention
