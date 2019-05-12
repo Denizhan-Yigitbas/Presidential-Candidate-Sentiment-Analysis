@@ -22,8 +22,9 @@ library(stm)
 library(quanteda)
 
 # tf_idf for candidates' tweets
+# "people" filtered out due to high n's
 tweets_lda <- tweet_words %>% 
-  count(candidate, word, sort = TRUE) %>% 
+  count(candidate, word, sort = TRUE) %>%
   bind_tf_idf(word, candidate, n) %>% 
   group_by(candidate) 
 
@@ -31,6 +32,7 @@ tweets_lda
 
 # this plots candidates' words which are of most relative importance compared to other candidate
 relative_freq <- tweets_lda %>% 
+  filter(word!="people") %>% 
   top_n(10) %>% 
   ungroup %>% 
   mutate(word=reorder(word,tf_idf)) %>% 
@@ -45,7 +47,18 @@ relative_freq <- tweets_lda %>%
 
 relative_freq
 
-# create a document feature matrix
+# how often do candidates talk about women's issues?
+women_tweets <- tweets_lda %>% 
+  filter(word=="women") %>% 
+  ggplot(aes(x=reorder(candidate, n), y=n, fill = candidate)) +
+  geom_col() +
+  ggtitle("Candidate Mentions of the Word 'Women'") +
+    xlab(element_blank()) +
+    ylab("Mentions") 
+
+women_tweets
+
+# create a document term matrix
 tweets_dtm <- tweets_lda %>% 
   cast_dtm(candidate, word, n)
 
@@ -138,6 +151,7 @@ wrong_words <- assignments %>%
   filter(document != consensus)
 
 wrong_words %>%
+  filter(document!="Cory Booker" & document!="Julian Castro") %>% 
   count(document, consensus, term, wt = count) %>%
   ungroup() %>%
   arrange(desc(n)) %>% 
