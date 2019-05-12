@@ -37,9 +37,6 @@ tweets <- cleaned %>%
 retweets <- cleaned %>% 
   filter(tweetBinary == 0)
 
-tweets_mention_trump <- tweets %>% 
-  filter(str_detect(tweets$text, "Trump")==TRUE)
-
 tweets$candidate <- recode(tweets$candidate, "amyklobuchar"="Amy Klobuchar")
 tweets$candidate <- recode(tweets$candidate, "ewarren"="Elizabeth Warren")
 tweets$candidate <- recode(tweets$candidate, "BetoORourke"="Beto O'Rourke")
@@ -56,7 +53,7 @@ tweets$candidate <- recode(tweets$candidate, "SenGillibrand"="Kirsten Gillibrand
 # add polling data
 polling <- data.frame(candidate = c("Joe Biden", "Bernie Sanders", "Elizabeth Warren", "Kamala Harris", "Pete Buttigieg", "Beto O'Rourke", "Cory Booker", "Amy Klobuchar", "Tulsi Gabbard", "Julian Castro", "Andrew Yang", "Kirsten Gillibrand"), 
                       polling = as.numeric(c(41.4, 14.6, 8.0, 7.0, 6.6,4.4,2.6,1.4,0.8,0.8,0.8,0.6)))
-polling
+
 tweets <- merge(tweets, polling,by="candidate")
 
 # subsets

@@ -1,3 +1,4 @@
+# note most of this script is trash i think
 ### STEP FIVE: Topic Modeling (using LDA)
 ### Reference https://eight2late.wordpress.com/2015/09/29/a-gentle-introduction-to-topic-modeling-using-r/
 ### Reference https://www.tidytextmining.com/topicmodeling.html
@@ -26,7 +27,7 @@ library(quanteda)
 tweets_lda <- tweet_words %>% 
   count(candidate, word, sort = TRUE) %>%
   bind_tf_idf(word, candidate, n) %>% 
-  group_by(candidate) 
+  group_by(candidate)
 
 tweets_lda
 
@@ -46,17 +47,6 @@ relative_freq <- tweets_lda %>%
           subtitle = "Relative to Other Candidates")
 
 relative_freq
-
-# how often do candidates talk about women's issues?
-women_tweets <- tweets_lda %>% 
-  filter(word=="women") %>% 
-  ggplot(aes(x=reorder(candidate, n), y=n, fill = candidate)) +
-  geom_col() +
-  ggtitle("Candidate Mentions of the Word 'Women'") +
-    xlab(element_blank()) +
-    ylab("Mentions") 
-
-women_tweets
 
 # create a document term matrix
 tweets_dtm <- tweets_lda %>% 

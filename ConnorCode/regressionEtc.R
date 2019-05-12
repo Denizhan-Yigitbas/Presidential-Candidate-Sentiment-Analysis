@@ -19,12 +19,12 @@ library(broom)
 
 # do poisson regression, not sure how though lol 
 # also reference http://varianceexplained.org/r/trump-tweets/
-sentiment_differences <- tweets_w_sentiment %>%
+sentiment_differences <- tweets %>%
   group_by(candidate) %>%
-  do(tidy(poisson.test(tweets_w_sentiment$candidate, tweets_w_sentiment$sentiment)))
+  do(tidy(poisson.test(tweets$candidate, tweets$sentimentscale)))
 
 sentiment_differences
 
 # interaction between sentiment and favs/rts
-summary(lm(favoriteCount ~ sentiment, data=tweets_w_sentiment))
-summary(lm(retweetCount ~ sentiment, data=tweets_w_sentiment))
+summary(lm(favoriteCount ~ sentimentscale, data=tweets))
+summary(lm(retweetCount ~ sentimentscale, data=tweets))

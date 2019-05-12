@@ -24,26 +24,22 @@ library(cleanNLP)
 # reference https://blog.exploratory.io/twitter-sentiment-analysis-scoring-by-sentence-b4d455de3560
 
 # add sentiment per tweet, move sentiment and tweet text to front of dataset
-# get_sentiment is from the syuzhet package, and by default uses the syuzhet dictionary 
-tweets_w_sentiment <- tweets %>% 
-  mutate(sentiment = get_sentiment(text)) %>% 
-  select(sentiment, text, everything())
-
-# extract the keywords responsible for sentiment coding??
-# below is not working; i need it to keep candidate name but its extracitng sentiment terms and keeping nothing else
-# tweets_w_sentiment <- tweets_w_sentiment %>% 
- # mutate(keywords <- extract_sentiment_terms(tweets$text, polarity_dt = lexicon::hash_sentiment_jockers_rinker))
-
-# sentiment_terms <- extract_sentiment_terms(tweets$text, polarity_dt = lexicon::hash_sentiment_jockers_rinker)
+# get_sentiment is from the syuzhet package, and by default uses the syuzhet dictionary
+# mutate: variable for Tweets mentioning Trump and not 
+tweets <- tweets %>% 
+  mutate(sentimentscale = get_sentiment(text)) %>% 
+  mutate(mentiontrump = ifelse(str_detect(tweets$text, "Trump")==TRUE,yes=1,no=0)) %>% 
+  select(-c(polarity)) %>% 
+  select(sentimentscale, text, everything())
 
 # specific word analysis
 
 tweet_words <- tweets %>% 
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg, drop = FALSE) %>%
   filter(!word %in% stop_words$word,
          str_detect(word, "[a-z]"))
 
-tweet_words
+# words per by candidate
 candidates_words <- tweet_words %>%
   group_by(candidate) %>%
   mutate(total_words = n()) %>%
@@ -52,17 +48,16 @@ candidates_words <- tweet_words %>%
 
 candidates_words
 
+# merge Tweet words w/ NRC sentiment
 nrc <- sentiments %>%
   filter(lexicon == "nrc") %>%
   dplyr::select(word, sentiment)
 
-tweet_words_w_sentiment <- tweet_words %>%
+tweet_words <- tweet_words %>%
   inner_join(nrc, by = "word")
 
-tweet_words_w_sentiment
-
+# group sentiment by candidate
 by_candidate_sentiment <- tweet_words %>%
-  inner_join(nrc, by = "word") %>%
   count(candidate, sentiment, id) %>%
   ungroup() %>%
   complete(candidate, sentiment, id, fill = list(n = 0)) %>%
@@ -72,4 +67,9 @@ by_candidate_sentiment <- tweet_words %>%
   mutate(percent = (100*(words/total_words))) %>% 
   ungroup()
 
+by_candidate_sentiment
+
+### PRIMARY DATASETS:
+tweets
+tweet_words
 by_candidate_sentiment
