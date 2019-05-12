@@ -16,6 +16,7 @@ library(sentimentr)
 library(dplyr)
 library(syuzhet)
 library(broom)
+library(cleanNLP)
 
 ## The following differs from most sentiment analysis in that it looks at 
 ## sentence level data instead of word-level
@@ -42,27 +43,33 @@ tweet_words <- tweets %>%
   filter(!word %in% stop_words$word,
          str_detect(word, "[a-z]"))
 
+tweet_words
 candidates_words <- tweet_words %>%
   group_by(candidate) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
-  distinct(id, candidate, total_words)
+  distinct(candidate, total_words)
+
+candidates_words
 
 nrc <- sentiments %>%
   filter(lexicon == "nrc") %>%
   dplyr::select(word, sentiment)
 
+tweet_words_w_sentiment <- tweet_words %>%
+  inner_join(nrc, by = "word")
+
+tweet_words_w_sentiment
+
 by_candidate_sentiment <- tweet_words %>%
   inner_join(nrc, by = "word") %>%
-  count(sentiment, id) %>%
+  count(candidate, sentiment, id) %>%
   ungroup() %>%
-  complete(sentiment, id, fill = list(n = 0)) %>%
-  inner_join(candidates_words) %>%
+  complete(candidate, sentiment, id, fill = list(n = 0)) %>%
+  inner_join(candidates_words, by="candidate") %>%
   group_by(candidate, sentiment, total_words) %>%
   summarize(words = sum(n)) %>%
-  mutate(percent = words/total_words) %>% 
+  mutate(percent = (100*(words/total_words))) %>% 
   ungroup()
 
-head(by_candidate_sentiment)
-## what the above tells us is a candidates' tweets' proportion of words that are of a certain sentiment
-# e.g. 3.44% of Amy Klobuchar's "Tweet words" are angry, 6.56% are in anticipation, etc.
+by_candidate_sentiment
