@@ -62,7 +62,7 @@ legend_ord <- levels(with(by_candidate_sentiment, reorder(sentiment, -percent)))
 by_candidate_sentiment_grouped <- by_candidate_sentiment %>% 
   group_by(sentiment) %>% 
   ggplot(aes(x=reorder(sentiment,percent),y=percent, fill=sentiment)) +
-  geom_col() +
+  geom_col(show.legend=FALSE) +
   facet_wrap(~candidate) +
   ggtitle("Proportional Sentiment per Candidate") +
   xlab(element_blank())+
@@ -214,7 +214,9 @@ retweetspertweet <- tweets %>%
 retweetspertweet %>% 
   ggplot(aes(x=reorder(candidate, rtspertweet),y=rtspertweet, fill = candidate)) +
   geom_col(show.legend = FALSE) +
-  coord_flip()
+  coord_flip() +
+  labs(y="Average Retweets per Tweet",
+       x=element_blank())
 
 favoritespertweet <- tweets %>% 
   group_by(candidate, id) %>% 
@@ -225,7 +227,9 @@ favoritespertweet <- tweets %>%
 favoritespertweet %>% 
   ggplot(aes(x=reorder(candidate, favspertweet),y=favspertweet, fill = candidate)) +
   geom_col(show.legend = FALSE) +
-  coord_flip()
+  coord_flip() +
+  labs(y="Average Favorites per Tweet",
+       x=element_blank())
 
 # determine which words are associated with greater
 # numbers of favorites and retweets
@@ -377,10 +381,74 @@ tweets %>%
 
 # To do: How does sentiment change when Tweets mention Trump?
 
+trump_w_sentiment <- tweet_words %>% 
+  mutate(mentiontrump = as.factor(mentiontrump)) %>% 
+  group_by(mentiontrump, sentiment) %>% 
+  summarise(n = n()) %>% 
+  mutate(percentsentiment = 100*(n/sum(n))) %>% 
+  ggplot(aes(group=mentiontrump, x=reorder(sentiment,percentsentiment), 
+             fill=mentiontrump, y=percentsentiment)) +
+  geom_bar(position=position_dodge(), stat="identity") +
+  scale_fill_discrete(name="Mentions Trump",
+                    breaks=c(0,1),
+                    labels=c("No", "Yes")) +
+  labs(x=element_blank(), 
+       y = "Proportion of Words", 
+       title = "Sentiment as a Proportion of Overall Tweets", 
+       subtitle = "Comparing Tweets mentioning Trump with those that don't")
+  
+trump_w_sentiment
+  
 # To do: plot relationship between current polling numbers and Tweet sentiment/favs/rts/etc.
+# nvm this analysis is stupid
+poll_vs_tweets <- tweets %>% 
+  group_by(polling) %>% 
+  summarise(favoriteCount = mean(favoriteCount)) %>% 
+  ggplot(aes(x=polling, y=favoriteCount)) +
+  geom_point() +
+  geom_smooth(method=lm, se=FALSE)
+
+poll_vs_tweets
+
+tweet_words %>% 
+group_by(polling, sentiment) %>% 
+  summarise(n = n()) %>% 
+  mutate(percentsentiment = 100*(n/sum(n))) %>% 
+  ggplot(aes(x=polling, y=percentsentiment)) +
+  geom_point() +
+  facet_wrap(~ sentiment, scales = "free")
+  
 
 # To do: does mentioning trump affect affect retweets/favs?
 # see https://www-sciencedirect-com.ezproxy.rice.edu/science/article/pii/S2468696417301088#fig0010
+
+trump_w_favs <- tweet_words %>% 
+  mutate(mentiontrump = as.factor(mentiontrump)) %>% 
+  group_by(mentiontrump) %>% 
+  summarise(favoriteCount = mean(favoriteCount)) %>% 
+  ggplot(aes(x=mentiontrump, y=favoriteCount, fill=mentiontrump)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_discrete(breaks=c(0,1), labels = c("Does Not Mention", "Does Mention")) +
+  labs(x="Mentions Trump",
+       y = "Average # of Favorites", 
+       title = "Average Tweet Popularity", 
+       subtitle = "Comparing Tweets mentioning Trump with those that don't") 
+
+trump_w_favs
+
+trump_w_rts <- tweet_words %>% 
+  mutate(mentiontrump = as.factor(mentiontrump)) %>% 
+  group_by(mentiontrump) %>% 
+  summarise(retweetCount = mean(retweetCount)) %>% 
+  ggplot(aes(x=mentiontrump, y=retweetCount, fill=mentiontrump)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_discrete(breaks=c(0,1), labels = c("Does Not Mention", "Does Mention")) +
+  labs(x="Mentions Trump",
+       y = "Average # of Favorites", 
+       title = "Average Tweet Popularity", 
+       subtitle = "Comparing Tweets mentioning Trump with those that don't") 
+
+trump_w_rts
 
 # how often do candidates talk about women's issues?
 women_tweets <- tweets %>% 
