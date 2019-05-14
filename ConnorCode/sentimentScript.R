@@ -48,11 +48,17 @@ tweets <- cleanedtweets %>%
   group_by(tweet) %>% 
   mutate(tweetlevelsentiment = mean(sentiment)) %>% 
   ungroup %>% 
-  select(candidate, id, tweet, text, sentiment, tweetlevelsentiment,
-         favoriteCount, retweetCount, createdDate, mentiontrump,
-         element_id, sentence_id, word_count) %>% 
   filter(!is.na(word_count)) %>% 
-  filter(text!=" ")
+  filter(text!=" ")  %>% 
+  mutate(sentimentbinary = ifelse(sentiment>0,"Positive", 
+                                  ifelse(sentiment<0,"Negative","Neutral"))) %>% 
+  mutate(tweetsentimentbinary = ifelse(tweetlevelsentiment>0,"Positive",
+                                       ifelse(tweetlevelsentiment<0,"Negative","Neutral"))) %>% 
+  mutate(distancefromzero = abs(sentiment)) %>% 
+  select(candidate, id, tweet, text, sentiment, sentimentbinary, 
+         tweetlevelsentiment, tweetsentimentbinary, distancefromzero,
+         favoriteCount, retweetCount, createdDate, mentiontrump,
+         element_id, sentence_id, word_count)
 
 summary(tweets)
 

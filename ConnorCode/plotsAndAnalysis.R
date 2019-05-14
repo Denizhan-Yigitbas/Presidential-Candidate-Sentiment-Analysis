@@ -1,6 +1,4 @@
 ### STEP THREE: EXPLORATORY PLOTS
-### To do for Connor: look into unique ID, don't want duplicates on most analyses but don't
-### want to miss out on sentence level analysis
 
 library(dplyr)
 library(purrr)
@@ -47,6 +45,38 @@ tweets_over_time_candidate
 # takeaway: Andrew Yang Tweets way more than everyone else, 
 # explaining why almost all of his tweets (1500) are from 
 # the last couple months (March)
+
+# proportional sentiment by sentence
+sentimentbinary <- tweets %>% 
+  ggplot(aes(x=sentimentbinary, fill=sentimentbinary)) +
+  geom_bar(stat="count")
+
+sentimentbinary
+
+# proportional sentiment by Tweet
+tweetsentimentbinary <- tweets %>% 
+  distinct(id, .keep_all = TRUE) %>% 
+  ggplot(aes(x=tweetsentimentbinary, fill=tweetsentimentbinary)) +
+  geom_bar(stat="count", show.legend = FALSE) +
+  labs(x="Overall Tweet Sentiment",
+       y="Number of Tweets",
+       title = "Frequency of Sentiment by Tweet")
+
+tweetsentimentbinary
+
+tweetsentimentbinary_by_candidate <- tweets %>% 
+  distinct(id, .keep_all = TRUE) %>% 
+  group_by(candidate, tweetsentimentbinary) %>% 
+  summarise(n = n()) %>% 
+  mutate(percentsentiment = 100*(n/sum(n))) %>% 
+  ggplot(aes(x=tweetsentimentbinary, y= percentsentiment, fill=tweetsentimentbinary)) +
+  geom_col(show.legend = FALSE) + 
+  facet_wrap(~ candidate) +
+  labs(x="Overall Tweet Sentiment",
+       y="Number of Tweets",
+       title = "Frequency of Sentiment by Tweet")
+
+tweetsentimentbinary_by_candidate
 
 # average wordsentiment by candidate
 candidate_sentiment <- tweets %>%
@@ -249,7 +279,6 @@ favoritespertweet %>%
 # determine which words are associated with greater
 # numbers of favorites and retweets
 # https://www.tidytextmining.com/twitter.html#favorites-and-retweets
-# is this correct? the NRC
 
 word_by_rts <- tweet_words %>% 
   group_by(id, word, candidate) %>% 
@@ -386,8 +415,11 @@ sentiment_by_trump_mention
 # Who is most likely to mention Trump?
 
 tweets %>% 
+  distinct(id, .keep_all = TRUE) %>% 
   group_by(candidate) %>% 
-  summarise(mentiontrump = sum(mentiontrump==1), totaltweets = n(), percent = 100*(mentiontrump/totaltweets)) %>% 
+  summarise(mentiontrump = sum(mentiontrump==1), 
+            totaltweets = n(), 
+            percent = 100*(mentiontrump/totaltweets)) %>% 
   ggplot(aes(x=reorder(candidate, percent), y=percent, fill = candidate)) +
   geom_col(show.legend = FALSE) + 
   xlab(element_blank()) +
