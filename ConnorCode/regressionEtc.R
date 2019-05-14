@@ -21,10 +21,10 @@ library(broom)
 # also reference http://varianceexplained.org/r/trump-tweets/
 sentiment_differences <- tweets %>%
   group_by(candidate) %>%
-  do(tidy(poisson.test(tweets$candidate, tweets$sentimentscale)))
+  do(tidy(poisson.test(tweets$candidate, tweets$sentiment)))
 
 sentiment_differences
 
 # interaction between sentiment and favs/rts
-summary(lm(favoriteCount ~ sentimentscale, data=tweets))
-summary(lm(retweetCount ~ sentimentscale, data=tweets))
+summary(lm(favoriteCount ~ sentiment, data=tweets))
+summary(lm(retweetCount ~ sentiment, data=tweets))
