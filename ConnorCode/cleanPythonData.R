@@ -15,6 +15,13 @@ library(sentimentr)
 library(dplyr)
 library(syuzhet)
 library(broom)
+library(cleanNLP)
+library(textclean)
+library(ggrepel)
+library(topicmodels)
+library(tm)
+library(stm)
+library(quanteda)
 
 #in actual,"customTwitterUsersCombinedUncleaned.csv" not "sampleSet.csv"
 uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
@@ -24,31 +31,31 @@ reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 cleaned <- uncleaned %>%
   filter(!str_detect(text, '^"')) %>%
   mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>% 
-  filter(!is.na(text)) %>% 
-  filter(text!="") %>% 
   mutate(text = str_replace_all(text, "@[A-Za-z0-9_]+[A-Za-z0-9-_]+", "")) %>% 
   mutate(text = str_replace_all(text, "@", "")) %>% 
   mutate(text = str_replace_all(text, "—", " ")) %>% 
-  mutate(text = str_replace_all(text, "http\\S+", ""))
+  mutate(text = str_replace_all(text, "http\\S+", "")) %>% 
+  filter(!is.na(text)) %>% 
+  filter(text!="")
+
+cleaned$candidate <- recode(cleaned$candidate, "amyklobuchar"="Amy Klobuchar")
+cleaned$candidate <- recode(cleaned$candidate, "ewarren"="Elizabeth Warren")
+cleaned$candidate <- recode(cleaned$candidate, "BetoORourke"="Beto O'Rourke")
+cleaned$candidate <- recode(cleaned$candidate, "JoeBiden"="Joe Biden")
+cleaned$candidate <- recode(cleaned$candidate, "JulianCastro"="Julian Castro")
+cleaned$candidate <- recode(cleaned$candidate, "TulsiGabbard"="Tulsi Gabbard")
+cleaned$candidate <- recode(cleaned$candidate, "PeteButtigieg"="Pete Buttigieg")
+cleaned$candidate <- recode(cleaned$candidate, "KamalaHarris"="Kamala Harris")
+cleaned$candidate <- recode(cleaned$candidate, "BernieSanders"="Bernie Sanders")
+cleaned$candidate <- recode(cleaned$candidate, "CoryBooker"="Cory Booker")
+cleaned$candidate <- recode(cleaned$candidate, "AndrewYang"="Andrew Yang")
+cleaned$candidate <- recode(cleaned$candidate, "SenGillibrand"="Kirsten Gillibrand")
 
 cleanedtweets <- cleaned %>% 
   filter(tweetBinary == 1)
 
 cleanedretweets <- cleaned %>% 
   filter(tweetBinary == 0)
-
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "amyklobuchar"="Amy Klobuchar")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "ewarren"="Elizabeth Warren")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "BetoORourke"="Beto O'Rourke")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "JoeBiden"="Joe Biden")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "JulianCastro"="Julian Castro")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "TulsiGabbard"="Tulsi Gabbard")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "PeteButtigieg"="Pete Buttigieg")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "KamalaHarris"="Kamala Harris")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "BernieSanders"="Bernie Sanders")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "CoryBooker"="Cory Booker")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "AndrewYang"="Andrew Yang")
-cleanedtweets$candidate <- recode(cleanedtweets$candidate, "SenGillibrand"="Kirsten Gillibrand")
 
 # add polling data
 polling <- data.frame(candidate = c("Joe Biden", "Bernie Sanders", "Elizabeth Warren", "Kamala Harris", "Pete Buttigieg", "Beto O'Rourke", "Cory Booker", "Amy Klobuchar", "Tulsi Gabbard", "Julian Castro", "Andrew Yang", "Kirsten Gillibrand"), 

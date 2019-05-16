@@ -16,6 +16,13 @@ library(sentimentr)
 library(dplyr)
 library(syuzhet)
 library(broom)
+library(cleanNLP)
+library(textclean)
+library(ggrepel)
+library(topicmodels)
+library(tm)
+library(stm)
+library(quanteda)
 
 # do poisson regression, not sure how though lol 
 # also reference http://varianceexplained.org/r/trump-tweets/

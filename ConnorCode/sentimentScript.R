@@ -18,6 +18,11 @@ library(syuzhet)
 library(broom)
 library(cleanNLP)
 library(textclean)
+library(ggrepel)
+library(topicmodels)
+library(tm)
+library(stm)
+library(quanteda)
 
 # add sentiment per tweet, move sentiment and tweet text to front of dataset
 # get_sentiment is from the syuzhet package, and by default uses the syuzhet dictionary

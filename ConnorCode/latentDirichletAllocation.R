@@ -3,6 +3,7 @@
 ### Reference https://eight2late.wordpress.com/2015/09/29/a-gentle-introduction-to-topic-modeling-using-r/
 ### Reference https://www.tidytextmining.com/topicmodeling.html
 
+library(dplyr)
 library(purrr)
 library(twitteR)
 library(tidyr)
@@ -16,6 +17,8 @@ library(sentimentr)
 library(dplyr)
 library(syuzhet)
 library(broom)
+library(cleanNLP)
+library(textclean)
 library(ggrepel)
 library(topicmodels)
 library(tm)

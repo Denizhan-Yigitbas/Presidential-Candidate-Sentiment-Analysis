@@ -14,15 +14,23 @@ library(sentimentr)
 library(dplyr)
 library(syuzhet)
 library(broom)
+library(cleanNLP)
+library(textclean)
 library(ggrepel)
+library(topicmodels)
+library(tm)
+library(stm)
+library(quanteda)
 
 # tweets per candidate. these should be roughly equal
 tweets_per_candidate <- tweets %>% 
   group_by(candidate) %>% 
   distinct(id, .keep_all = TRUE) %>% 
-  ggplot(aes(x=candidate)) +
-  geom_bar() +
-  coord_flip()
+  ggplot(aes(x=forcats::fct_infreq(candidate))) +
+  geom_bar() + 
+  coord_flip() +
+  labs(x="Count",
+       y="Candidate")
 
 tweets_per_candidate
 
