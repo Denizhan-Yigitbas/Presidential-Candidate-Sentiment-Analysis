@@ -2,6 +2,7 @@ import tweepy
 import preprocessor
 import csv
 from textblob import TextBlob
+import datetime
 
 class TwitterUser():
     def __init__(self, twitterHandle, consumer_key, consumer_secret, access_key, access_secret):
@@ -62,6 +63,16 @@ class TwitterUser():
         print("Data Retrieval Successful! \n")
         return allTweets
     
+    # new
+    def get_twitter_activity_timelime(self, startDay, startMonth, startYear, endDay, endMonth, endyear):
+        startDate = datetime.datetime(startYear, startMonth, startDay, 0, 0, 0)
+        endDate = datetime.datetime(endyear, endMonth, endDay, 0, 0, 0)
+        timelineTweets = []
+        for tweet in self.allTweets:
+            if tweet.created_at.date() > startDate.date() and tweet.created_at.date() < endDate.date():
+                timelineTweets.append(tweet)
+        return timelineTweets
+        
     def is_tweet(self, tweet):
         """
         Given a tweet, this will return true if this is a tweet and false if it is a retweet
@@ -247,6 +258,43 @@ class TwitterUser():
         polarity = analyzed.sentiment.polarity
         return polarity
     
+    # new
+    def prepare_csv_for_dataSet(self, dataSet):
+        tweetId = []
+        tweetText = []
+        tweetDate = []
+        tweetFavCount = []
+        tweetRetCount = []
+        tweetOrRetweet = []
+        tweetData = dataSet
+        for tweet in tweetData:
+            if self.is_tweet(tweet):
+                tweetOrRetweet.append(1)
+                text = tweet.full_text
+            else:
+                tweetOrRetweet.append(0)
+                text = tweet.retweeted_status.full_text
+            tweetId.append(tweet.id_str)
+            tweetText.append(text)
+            tweetDate.append(tweet.created_at.date())
+            tweetFavCount.append(tweet.favorite_count)
+            tweetRetCount.append(tweet.retweet_count)
+        candidate = [self.twitterHandle] * len(tweetId)
+        return candidate, tweetId, tweetText, tweetDate, tweetFavCount, tweetRetCount, tweetOrRetweet
+    
+    # new
+    def export_csv_for_timeline(self,startDay, startMonth, startYear, endDay, endMonth, endyear):
+        candData, idData, textData, dateData, favCountData, retweetCountData, tweetOrRetData = \
+            self.prepare_csv_for_dataSet(self.get_twitter_activity_timelime
+                                         (startDay, startMonth, startYear, endDay, endMonth, endyear))
+        dataSet = list(
+            zip(candData, idData, textData, dateData, favCountData, retweetCountData, tweetOrRetData))
+        with open('%s_timeline.csv' % self.twitterHandle, 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(
+                ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "tweetBinary"])
+            writer.writerows(dataSet)
+    
     def prepare_cleaned_csv_tweet_data(self):
         """
         Returns 7 lists of data for only tweets that will be used as columns 
@@ -372,6 +420,7 @@ class TwitterUser():
             writer = csv.writer(f)
             writer.writerow(["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
             writer.writerows(dataSet)
+            
 
 def combinedCleanedCSV(TwitterUserArray):
     """
@@ -405,6 +454,20 @@ def combinedUncleanedCSV(TwitterUserArray):
             ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
         writer.writerows(finalDataSet)
 
+def combine2016CSV(TwitterUserArray):
+    finalDataSet = []
+    for user in TwitterUserArray:
+        candData, idData, textData, dateData, favCountData, retweetCountData, tweetOrRetData = \
+            user.prepare_csv_for_dataSet(user.get_twitter_activity_timelime(4,5,2015,4,5,2016))
+        userDataSet = list(
+            zip(candData, idData, textData, dateData, favCountData, retweetCountData, tweetOrRetData))
+        finalDataSet.extend(userDataSet)
+    with open('2016ApiPull.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(
+            ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "tweetBinary"])
+        writer.writerows(finalDataSet)
+        
 def sample(TwitterUserArray, tweetsPerUser):
     """
     Given a list of TwitterUser objects, this will create a sample csv file that contains tweetsPerUser number of
@@ -428,3 +491,4 @@ def sample(TwitterUserArray, tweetsPerUser):
         writer.writerow(
             ["candidate", "id", "text", "createdDate", "favoriteCount", "retweetCount", "polarity", "tweetBinary"])
         writer.writerows(finalDataSet)
+   
