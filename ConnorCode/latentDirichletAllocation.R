@@ -1,3 +1,4 @@
+# note most of this script is trash i think
 ### STEP FIVE: Topic Modeling (using LDA)
 ### Reference https://eight2late.wordpress.com/2015/09/29/a-gentle-introduction-to-topic-modeling-using-r/
 ### Reference https://www.tidytextmining.com/topicmodeling.html
@@ -22,15 +23,17 @@ library(stm)
 library(quanteda)
 
 # tf_idf for candidates' tweets
+# "people" filtered out due to high n's
 tweets_lda <- tweet_words %>% 
-  count(candidate, word, sort = TRUE) %>% 
+  count(candidate, word, sort = TRUE) %>%
   bind_tf_idf(word, candidate, n) %>% 
-  group_by(candidate) 
+  group_by(candidate)
 
 tweets_lda
 
 # this plots candidates' words which are of most relative importance compared to other candidate
 relative_freq <- tweets_lda %>% 
+  filter(word!="people") %>% 
   top_n(10) %>% 
   ungroup %>% 
   mutate(word=reorder(word,tf_idf)) %>% 
@@ -45,7 +48,7 @@ relative_freq <- tweets_lda %>%
 
 relative_freq
 
-# create a document feature matrix
+# create a document term matrix
 tweets_dtm <- tweets_lda %>% 
   cast_dtm(candidate, word, n)
 
@@ -138,6 +141,7 @@ wrong_words <- assignments %>%
   filter(document != consensus)
 
 wrong_words %>%
+  filter(document!="Cory Booker" & document!="Julian Castro") %>% 
   count(document, consensus, term, wt = count) %>%
   ungroup() %>%
   arrange(desc(n)) %>% 
