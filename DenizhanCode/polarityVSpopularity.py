@@ -1,6 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import statistics
+import re
+import nltk
+from nltk.tokenize import RegexpTokenizer
+from nltk.corpus import stopwords
 
 
 df = pd.read_csv('customTwitterUsersCombinedCleaned.csv')
@@ -60,15 +64,14 @@ def polarityVSpopularity(DataFrame, Candidate):
     plt.bar(list(dic_ret.keys()), list(dic_ret.values()), width=0.1)
     plt.show()
 
-polarityVSpopularity(df1, 'JoeBiden')
-polarityVSpopularity(df1, 'CoryBooker')
-polarityVSpopularity(df1, 'JulianCastro')
-polarityVSpopularity(df1, 'TulsiGabbard')
-polarityVSpopularity(df1, 'SenGillibrand')
-polarityVSpopularity(df1, 'KamalaHarris')
-polarityVSpopularity(df1, 'amyklobuchar')
-polarityVSpopularity(df1, 'BetoORourke')
-polarityVSpopularity(df1, 'BernieSanders')
-polarityVSpopularity(df1, 'ewarren')
-polarityVSpopularity(df1, 'AndrewYang')
-
+# polarityVSpopularity(df1, 'JoeBiden')
+# polarityVSpopularity(df1, 'CoryBooker')
+# polarityVSpopularity(df1, 'JulianCastro')
+# polarityVSpopularity(df1, 'TulsiGabbard')
+# polarityVSpopularity(df1, 'SenGillibrand')
+# polarityVSpopularity(df1, 'KamalaHarris')
+# polarityVSpopularity(df1, 'amyklobuchar')
+# polarityVSpopularity(df1, 'BetoORourke')
+# polarityVSpopularity(df1, 'BernieSanders')
+# polarityVSpopularity(df1, 'ewarren')
+# polarityVSpopularity(df1, 'AndrewYang')
