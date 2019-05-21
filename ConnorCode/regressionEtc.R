@@ -35,7 +35,9 @@ sentiment_differences
 
 # interaction between sentiment and favs/rts
 tweets_w_no_sentences <- tweets %>% 
-  distinct(id, .keep_all = TRUE)
+  distinct(id, .keep_all = TRUE) %>% 
+  mutate(interactions = favoriteCount + retweetCount)
   
+summary(lm(interactions ~ sentiment, data=tweets_w_no_sentences))
 summary(lm(favoriteCount ~ sentiment, data=tweets_w_no_sentences))
 summary(lm(retweetCount ~ sentiment, data=tweets_w_no_sentences))

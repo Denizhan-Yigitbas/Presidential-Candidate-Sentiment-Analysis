@@ -69,6 +69,7 @@ summary(tweets)
 
 # specific word analysis
 
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 tweet_words <- tweets %>% 
   unnest_tokens(word, text, token = "regex", pattern = reg, drop = FALSE) %>%
   filter(!word %in% stop_words$word,

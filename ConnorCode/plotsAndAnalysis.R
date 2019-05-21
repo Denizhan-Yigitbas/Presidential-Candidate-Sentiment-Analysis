@@ -57,7 +57,10 @@ tweets_over_time_candidate
 # proportional sentiment by sentence
 sentimentbinary <- tweets %>% 
   ggplot(aes(x=sentimentbinary, fill=sentimentbinary)) +
-  geom_bar(stat="count")
+  geom_bar(stat="count", show.legend = FALSE) +
+  labs(x="Sentiment",
+       y="Count",
+       title = "Frequency of Sentiment by Sentence")
 
 sentimentbinary
 
@@ -66,7 +69,7 @@ tweetsentimentbinary <- tweets %>%
   distinct(id, .keep_all = TRUE) %>% 
   ggplot(aes(x=tweetsentimentbinary, fill=tweetsentimentbinary)) +
   geom_bar(stat="count", show.legend = FALSE) +
-  labs(x="Overall Tweet Sentiment",
+  labs(x="Sentiment",
        y="Number of Tweets",
        title = "Frequency of Sentiment by Tweet")
 
@@ -80,13 +83,13 @@ tweetsentimentbinary_by_candidate <- tweets %>%
   ggplot(aes(x=tweetsentimentbinary, y= percentsentiment, fill=tweetsentimentbinary)) +
   geom_col(show.legend = FALSE) + 
   facet_wrap(~ candidate) +
-  labs(x="Overall Tweet Sentiment",
+  labs(x="Sentiment",
        y="Number of Tweets",
        title = "Frequency of Sentiment by Tweet")
 
 tweetsentimentbinary_by_candidate
 
-# average wordsentiment by candidate
+# average sentiment by candidate
 candidate_sentiment <- tweets %>%
   group_by(candidate) %>% 
   summarise(sentiment = mean(sentiment)) %>% 
@@ -255,6 +258,20 @@ polarity_vs_popularity_rt_summarised <- tweets %>%
 
 polarity_vs_popularity_rt_summarised
 
+polarity_vs_popularity <- tweets %>%
+  distinct(id, .keep_all = TRUE) %>% 
+  mutate(interactions = favoriteCount + retweetCount) %>% 
+  filter(interactions < 90000) %>% 
+  filter(sentiment<1.5) %>% 
+  ggplot(aes(x=tweetlevelsentiment, y=interactions)) +
+  geom_point(alpha = .05) +
+  geom_smooth(method=lm, se=TRUE) +
+  ylab("Number of Interactions") +
+  xlab("Sentiment Score") +
+  ggtitle("Relationship Between Tweet Sentiment and Interactions")
+
+polarity_vs_popularity
+
 # average retweets and favs by candidate
 retweetspertweet <- tweets %>% 
   distinct(id, .keep_all = TRUE) %>% 
@@ -342,6 +359,43 @@ word_by_favs %>%
   labs(x = NULL, 
        y = "Median # of Favorites for Tweets containing each word")
 
+word_by_interactions <- tweet_words %>% 
+  group_by(id, word, candidate) %>% 
+  mutate(interactions = favoriteCount+retweetCount) %>% 
+  summarise(interactions = first(interactions)) %>% 
+  group_by(candidate, word) %>% 
+  summarise(interactions = median(interactions), uses = n()) %>%
+  filter(interactions != 0) %>%
+  ungroup()
+
+word_by_interactions %>%
+  filter(uses > 5) %>%
+  group_by(candidate) %>%
+  top_n(10, interactions) %>%
+  arrange(interactions) %>%
+  ungroup() %>%
+  mutate(word = factor(word, unique(word))) %>%
+  ungroup() %>%
+  ggplot(aes(word, interactions, fill = candidate)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ candidate, scales = "free") +
+  coord_flip() +
+  labs(x = NULL, 
+       y = "Median # of Interactions for Tweets containing each word")
+
+word_by_interactions %>%
+  filter(uses > 5) %>%
+  top_n(10, interactions) %>%
+  arrange(interactions) %>%
+  ungroup() %>%
+  mutate(word = factor(word, unique(word))) %>%
+  ungroup() %>%
+  ggplot(aes(word, interactions)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  labs(x = NULL, 
+       y = "Median # of Interactions for Tweets containing each word")
+
 # note for above: look at Joe Biden's repeated use of the phrase "battle for the soul of this nation" lol
 # https://twitter.com/search?q=battle%20from%3AJoeBiden&src=typd
 
@@ -400,6 +454,34 @@ candidate_favorites_by_sentiment %>%
   geom_col(show.legend = FALSE) +
   coord_flip() +
   ylab("Average # of Favorites") +
+  xlab(element_blank()) +
+  ggtitle("Popularity of Tweet Sentiments")
+
+candidate_interactions_by_sentiment <- tweet_words_w_nrc %>%
+  group_by(id, wordsentiment, candidate) %>% 
+  mutate(interactions = favoriteCount+retweetCount) %>% 
+  summarise(interactions = first(interactions)) %>% 
+  group_by(candidate, wordsentiment) %>% 
+  summarise(interactions = mean(interactions), uses = n()) %>% 
+  ungroup() 
+
+candidate_interactions_by_sentiment %>% 
+  group_by(candidate) %>% 
+  ggplot(aes(x=reorder(wordsentiment, interactions), y=interactions, fill=wordsentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ candidate, scales = "free") +
+  coord_flip() +
+  ylab("Average # of Interactions") +
+  xlab(element_blank()) +
+  ggtitle("Popularity of Tweet Sentiments")
+
+candidate_interactions_by_sentiment %>% 
+  group_by(wordsentiment) %>% 
+  summarise(meaninteractions = mean(interactions)) %>% 
+  ggplot(aes(x=reorder(wordsentiment, meaninteractions), y=meaninteractions, fill=wordsentiment)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  ylab("Average # of Interactions") +
   xlab(element_blank()) +
   ggtitle("Popularity of Tweet Sentiments")
 
@@ -507,6 +589,22 @@ trump_w_rts <- tweets %>%
        subtitle = "Comparing Tweets mentioning Trump with those that don't") 
 
 trump_w_rts
+
+trump_w_interactions <- tweets %>% 
+  distinct(id, .keep_all = TRUE) %>% 
+  mutate(interactions = retweetCount+favoriteCount) %>% 
+  mutate(mentiontrump = as.factor(mentiontrump)) %>% 
+  group_by(mentiontrump) %>% 
+  summarise(interactions = mean(interactions)) %>% 
+  ggplot(aes(x=mentiontrump, y=interactions, fill=mentiontrump)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_discrete(breaks=c(0,1), labels = c("Does Not Mention", "Does Mention")) +
+  labs(x="Mentions Trump",
+       y = "Average # of Interactions", 
+       title = "Average Tweet Popularity", 
+       subtitle = "Comparing Tweets mentioning Trump with those that don't") 
+
+trump_w_interactions
 
 # how often do candidates talk about women's issues?
 women_tweets <- tweets %>% 
