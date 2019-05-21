@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
                       out.width='1000px', out.height='600px', dpi=200)
 ```
 
-The R code for this post can be found [here](.
+The R code for this post can be found [here](https://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis/blob/master/markdown05_16.Rmd).
 ## Research Question and Goal
 
 How do presidential candidates differ in their use of Twitter to publicize policy positions, garner support, and participate in the political arena? Are certain types of Tweets more effective at attracting support, as evidenced by a greater number of Tweet interactions? 
