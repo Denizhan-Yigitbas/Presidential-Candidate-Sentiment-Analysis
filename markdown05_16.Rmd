@@ -1,5 +1,5 @@
 ---
-title: "Using Sentiment Analysis to Explore the Twitter Feeds of Presidential Candidates"
+title: "Following the Race: Using Sentiment Analysis to Explore the Twitter Feeds of Presidential Candidates"
 author: "Connor Rothschild and Denizhan Yigitbas"
 date: "5/16/2019"
 output: 
@@ -13,14 +13,19 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
                       out.width='1000px', out.height='600px', dpi=200)
 ```
 
-The R code for this post can be found [here](https://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis/blob/master/markdown05_16.Rmd).
+```{rcpp, include=FALSE}
+<base target="_top"/>
+```
+
+The R code for this post can be found [here](https://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis/blob/master/markdown05_16.Rmd). A less technical version of this post without code snippets can be found [here](https://www.connorrothschild.com/single-post/2019/05/21/following-the-race).
+
 ## Research Question and Goal
 
 How do presidential candidates differ in their use of Twitter to publicize policy positions, garner support, and participate in the political arena? Are certain types of Tweets more effective at attracting support, as evidenced by a greater number of Tweet interactions? 
 
 One way to explore these questions is by using *sentiment analysis*, or the process of computationally categorizing opinions and emotionality in a piece of text. Some data scientists, for example, have used this technique to argue that Donald Trump's Twitter timeline is populated by [different Tweets from different people](http://varianceexplained.org/r/trump-tweets/). 
 
-Sentiment analysis has yet to be utilized to explore how *different* candidates use Twitter in different ways. By utilizing [sentence-level sentiment analysis](https://medium.com/@ODSC/an-introduction-to-sentence-level-sentiment-analysis-with-sentimentr-ac556bd7f75a) on individual Tweets as well as word-by-word analysis using the [NRC Word-Emotion Association Lexicon](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm), we're able to explore this exact question. The analysis leverages the power of the [sentimentr package](https://cran.r-project.org/web/packages/sentimentr/sentimentr.pdf) to better understand what types of emotions "sell" on Twitter and how candidates use the platform as a mechanism to attract political support. 
+Sentiment analysis has yet to be utilized to explore how *different* candidates use Twitter in different ways. By utilizing [sentence-level sentiment analysis](http://medium.com/@ODSC/an-introduction-to-sentence-level-sentiment-analysis-with-sentimentr-ac556bd7f75a) on individual Tweets as well as word-by-word analysis using the [NRC Word-Emotion Association Lexicon](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm), we're able to explore these questions. The analysis leverages the power of the [sentimentr package](http://cran.r-project.org/web/packages/sentimentr/sentimentr.pdf) to better understand what types of emotions "sell" on Twitter and how candidates use the platform as a mechanism to attract political support. 
 
 ## Load Libraries
 
@@ -50,11 +55,11 @@ library(quanteda)
 
 ## Data Collection
 
-We begin our analysis with the data collection process. We use Python to gather a massive amount of Tweets (37,218!) from 12 presidential candidates' Twitter feeds. Specifically, we used two different methods for pulling Tweets. The main method involved using Twitter’s Tweepy Python library. We created an API that allowed us to pull various information about the most recent 3200 tweets by a user. [The API link could be found here](https://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis/blob/master/DenizhanCode/TwitterUser.py).
+We begin our analysis with the data collection process. We use Python to gather a massive amount of Tweets (37,218!) from 12 presidential candidates' Twitter feeds. Specifically, we use two different methods for pulling Tweets. The main method involved using Twitter’s Tweepy Python library. We created an API that allowed us to pull various information about the most recent 3200 tweets by a user. [The API link could be found here](http://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis/blob/master/DenizhanCode/TwitterUser.py).
 
-In a later step, we will go further back in time to pull Tweets from 2016 presidential candidates for a comparative analysis. In order to do this, we use a [public GitHub repository](https://github.com/bpb27/twitter_scraping) that creates a scraper to pull candidate Tweets. The scraper automatically scrolls through the inputed date range on a given candidate's website and mines data while scrolling.
+In a later step, we will go further back in time to pull Tweets from 2016 presidential candidates for a comparative analysis. In order to do this, we use a [public GitHub repository](http://github.com/bpb27/twitter_scraping) that creates a scraper to pull candidate Tweets. The scraper automatically scrolls through the inputed date range on a given candidate's website and mines data while scrolling.
 
-You can find further documentation of our data pulling process on [our Github](https://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis). 
+You can find further documentation of our data pulling process on [our Github](http://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis). 
 
 ## Cleaning Data
 
@@ -67,12 +72,12 @@ head(uncleaned$text)
 
 Specifically, the presence of links and images may cause some problems as they are high in frequency but provide no insights into Tweet sentiment. Moreover, Tweets often include a large number of Twitter-specific characters such as @s and #s. 
 
-We can clean this type of text using some RegEx and the [stringr package](https://cran.r-project.org/web/packages/stringr/stringr.pdf). Then, using the *tweetBinary* column in our dataset, we filter out Retweets (because we are interested in candidates' sentiment, not their followers').
+We can clean this type of text using some RegEx and the [stringr package](http://cran.r-project.org/web/packages/stringr/stringr.pdf). Then, using the *tweetBinary* column in our dataset, we filter out Retweets (because we are interested in candidates' sentiment, not their followers').
 
 ```{r clean data}
 cleaned <- uncleaned %>%
   filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>% 
+  mutate(text = str_replace_all(text, "http://t.co/[A-Za-z\\d]+|&amp;", "")) %>% 
   mutate(text = str_replace_all(text, "@[A-Za-z0-9_]+[A-Za-z0-9-_]+", "")) %>% 
   mutate(text = str_replace_all(text, "@", "")) %>% 
   mutate(text = str_replace_all(text, "—", " ")) %>% 
@@ -121,7 +126,7 @@ cleanedtweets %>%
        y="Candidate")
 ```
 
-Our dataset is lacking in Tweets from Julian Castro and Joe Biden, and to some extent Cory Booker. This is mostly because those candidates don't Tweet as much; [Joe Biden's Twitter account](https://twitter.com/JoeBiden) only has 1,700 Tweets. But it's also because some candidates Retweet more than others, and we filter those out. 
+Our dataset is lacking in Tweets from Julian Castro and Joe Biden, and to some extent Cory Booker. This is mostly because those candidates don't Tweet as much; [Joe Biden's Twitter account](http://twitter.com/JoeBiden) only has 1,700 Tweets. But it's also because some candidates Retweet more than others, and we filter those out. 
 
 Next, how does the distribution of Tweets over time look? 
 
@@ -140,19 +145,19 @@ cleanedtweets %>%
   labs(x="Month of Creation",
        y="Number of Tweets") +
   scale_x_continuous(name = "Month", breaks=c(3,6,9,12), labels=c("Mar.", "June","Sept.", "Dec.")) +
-  theme(axis.text.x = element_text(size = 6))
+  theme(axis.text.x = element_text(size = 7))
 ```
 
-From this, its obvious that Andrew Yang Tweets *way more* than everyone else, given that most of his tweets (>2000) are from the last three months (February, March, and April).
+From this, it is obvious that Andrew Yang Tweets *way more* than everyone else, given that most of his tweets (>2000) are from the last three months (February, March, and April).
 
 ## Sentiment Analysis Using sentimentr
 Following this preliminary look at our data, we can begin with what we're really interested in: sentiment analysis of candidate Tweets. 
 
-We initially performed our analysis using the [syuzhet package](https://cran.r-project.org/web/packages/syuzhet/vignettes/syuzhet-vignette.html) in R, but found its output to be imprecise and misleading. This was because the syuzhet library was specifically made for sentiment analysis of fiction text (and the [domain-specifity of sentiment analyses is very important](https://sentic.net/wisdom2017labille.pdf)). We also ran into problems because the syuzhet library failed to account for [valence shifters](https://www.aaai.org/Papers/Symposia/Spring/2004/SS-04-07/SS04-07-020.pdf) (such as "not", "very", or "doesn't"). 
+We initially performed our analysis using the [syuzhet package](http://cran.r-project.org/web/packages/syuzhet/vignettes/syuzhet-vignette.html) in R, but found its output to be imprecise and misleading. This was because the syuzhet library was specifically made for sentiment analysis of fiction text (and the [domain-specifity of sentiment analyses is very important](http://sentic.net/wisdom2017labille.pdf)). We also ran into problems because the syuzhet library failed to account for [valence shifters](http://www.aaai.org/Papers/Symposia/Spring/2004/SS-04-07/SS04-07-020.pdf) (such as "not", "very", or "doesn't"). 
 
-The sentimentr package addresses both of these concerns; it is fine-tuned for sentence-level analysis, [has been used on Tweets in prior analyses](https://blog.exploratory.io/twitter-sentiment-analysis-scoring-by-sentence-b4d455de3560), and it accounts for [contextual valence shifters](https://www.aaai.org/Papers/Symposia/Spring/2004/SS-04-07/SS04-07-020.pdf). 
+The sentimentr package addresses both of these concerns; it is fine-tuned for sentence-level analysis, [has been used on Tweets in prior analyses](http://blog.exploratory.io/twitter-sentiment-analysis-scoring-by-sentence-b4d455de3560), and it accounts for [contextual valence shifters](http://www.aaai.org/Papers/Symposia/Spring/2004/SS-04-07/SS04-07-020.pdf). 
 
-As an example, the syuzhet package would code the sentence "I don't hate ice cream" as relatively negative, because the keyword *hate* determines the overall polarity of the sentence. The sentimentr package accounts for the negator *don't* and reverses the polarity score to be slightly positive. For a more thorough review of sentimentr, see [this post](https://cran.r-project.org/web/packages/sentimentr/readme/README.html) from its creator.
+As an example, the syuzhet package would code the sentence "I don't hate ice cream" as relatively negative, because the keyword *hate* determines the overall polarity of the sentence. The sentimentr package accounts for the negator *don't* and reverses the polarity score to be slightly positive. For a more thorough review of sentimentr, see [this post](http://cran.r-project.org/web/packages/sentimentr/readme/README.html) from its creator.
  
 Let's add sentiment to the dataset:
 ``` {r add sentiment}
@@ -256,11 +261,11 @@ There is considerable variance in positivity across candidates. Pete Buttigieg's
 
 ## Incorporating the NRC Emotion Lexicon
 
-After exploring how sentiment differs by candidate, we can perform additional analyses by looking at the *individual words a candidate uses*. The inspiration for this decision was the book *[Text Mining with R](https://www.tidytextmining.com/sentiment.html)*, written by [Julia Silge](https://juliasilge.com/) and [David Robinson](http://varianceexplained.org/). 
+After exploring how sentiment differs by candidate, we can perform additional analyses by looking at the *individual words a candidate uses*. The inspiration for this decision was the book *[Text Mining with R](http://www.tidytextmining.com/sentiment.html)*, written by [Julia Silge](http://juliasilge.com/) and [David Robinson](http://varianceexplained.org/). 
 
 We use the [NRC Word-Emotion Association Lexicon](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm), which is a crowdsourced list of 14,182 words and their most frequent association with eight emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust). This allows us to probe further into candidate Twitter feeds to see how candidates differ in their use of specific emotions.
 
-We create the *tweet_words* dataset with the *[unnest_tokens](https://www.rdocumentation.org/packages/tidytext/versions/0.2.0/topics/unnest_tokens)* function found in the *[tidytext package](https://www.rdocumentation.org/packages/tidytext)*. We then inner join the dataset to the NRC lexicon under the name *tweet_words_w_nrc*.
+We create the *tweet_words* dataset with the *[unnest_tokens](http://www.rdocumentation.org/packages/tidytext/versions/0.2.0/topics/unnest_tokens)* function found in the *[tidytext package](http://www.rdocumentation.org/packages/tidytext)*. We then inner join the dataset to the NRC lexicon under the name *tweet_words_w_nrc*.
 
 ``` {r create tweet_words}
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
@@ -311,7 +316,7 @@ word_by_interactions %>%
         strip.text.x = element_text(size = 8))
 ```
 
-The plot reveals some interesting insights about what topics are especially popular for certain candidates. It seems as if Tulsi Gabbard performs best when she mentions issues related to international security (*terrorism, waging, jihadists, genocidal*). Cory Booker received the most Retweets and Favorites during the Kavanaugh hearings in September 2018. Joe Biden is an especially interesting case; nearly all of his most popular words come from one phrase: "a battle for the soul of this nation." He uses that phrase---or some variation of it---[a lot](https://twitter.com/search?q=soul%20of%20this%20nation%20from%3AJoeBiden&src=typd).
+The plot reveals some interesting insights about what topics are especially popular for certain candidates. It seems as if Tulsi Gabbard performs best when she mentions issues related to international security (*terrorism, waging, jihadists, genocidal*). Cory Booker received the most Retweets and Favorites during the Kavanaugh hearings in September 2018. Joe Biden is an especially interesting case; nearly all of his most popular words come from one phrase: "a battle for the soul of this nation." He uses that phrase---or some variation of it---[a lot](http://twitter.com/search?q=soul%20of%20this%20nation%20from%3AJoeBiden&src=typd).
 
 More generally, words tangentially related to some legal issue in the Trump administration tend to perform the best on Twitter:
 
@@ -389,7 +394,7 @@ tweets %>%
 
 A final topic of interest is how Donald Trump affects the sentiment of candidate Tweets. Knowing that Donald Trump is a unique president with uniquely low levels of popularity, one may hypothesize that Tweets focusing on or mentioning the president may be different from most others. 
 
-Earlier, we created the variable *mentiontrump* using the *str_detect* function from the [stringr package](https://www.rdocumentation.org/packages/stringr/versions/1.4.0). By analyzing differences between Tweets which mention Trump and those that don't, we can understand how the "Trump variable" impacts Tweet behavior and popularity.
+Earlier, we created the variable *mentiontrump* using the *str_detect* function from the [stringr package](http://www.rdocumentation.org/packages/stringr/versions/1.4.0). By analyzing differences between Tweets which mention Trump and those that don't, we can understand how the "Trump variable" impacts Tweet behavior and popularity.
 
 First, who talks about Trump? Are some candidates (e.g. those who need to access Trump's base in order to secure the Democratic nomination) less likely to attack the president than others?
 
@@ -446,9 +451,9 @@ tweet_words_w_nrc %>%
        subtitle = "Comparing Tweets mentioning Trump with those that don't")
 ```
 
-The trend holds true: positive emotions like joy, trust, and anticipation are less common in Tweets that mention Donald Trump. The corrolary is also true. Negative emotions such as disgust, sadness, anger, and fear are more prevalent in Tweets that mention the president.
+The trend holds true: positive emotions like joy, trust, and anticipation are less common in Tweets that mention Donald Trump. The corollary is also true. Negative emotions such as disgust, sadness, anger, and fear are more prevalent in Tweets that mention the president.
 
-Aside from emotion, does the "Trump variable" affect Tweet popularity? One may hypothesize that Trump's [historically low popularity](https://projects.fivethirtyeight.com/trump-approval-ratings/) may lend itself to higher popularity in Tweets which disparage him.
+Aside from emotion, does the "Trump variable" affect Tweet popularity? One may hypothesize that Trump's [historically low popularity](http://projects.fivethirtyeight.com/trump-approval-ratings/) may lend itself to higher popularity in Tweets which disparage him.
 
 ``` {r mentiontrump popularity}
 tweets %>% 
@@ -466,7 +471,7 @@ tweets %>%
        subtitle = "Comparing Tweets mentioning Trump with those that don't") 
 ```
 
-Tweets which mention the president tend to get 2.2x the number of interactions (13,087) than those which don't (5912).
+Tweets which mention the president tend to get 2.2x the number of interactions (13,087) than those which don't (5,912).
 
 ## Next Steps
 
