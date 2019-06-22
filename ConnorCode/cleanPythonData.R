@@ -24,6 +24,7 @@ library(stm)
 library(quanteda)
 
 #in actual,"customTwitterUsersCombinedUncleaned.csv" not "sampleSet.csv"
+#uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
 uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
 
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"

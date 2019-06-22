@@ -21,6 +21,21 @@ library(topicmodels)
 library(tm)
 library(stm)
 library(quanteda)
+library(ggthemes)
+library(devtools)
+
+theme_cr <- function () {
+  theme_bw(base_size=12, base_family="sans") %+replace% 
+    theme(axis.ticks = element_line(colour = "black"), 
+          legend.key = element_rect(colour = "grey80"), 
+          panel.background = element_blank(), 
+          panel.border = element_blank(), 
+          panel.grid.major = element_line(colour = "grey90", size = 0.2), 
+          panel.grid.minor = element_line(colour = "grey98", size = 0.5), 
+          strip.background = element_rect(fill = "grey80", colour = "grey50", 
+                                          size = 0.2))
+}
+theme_set(theme_cr())
 
 # tweets per candidate. these should be roughly equal
 tweets_per_candidate <- tweets %>% 
@@ -30,9 +45,11 @@ tweets_per_candidate <- tweets %>%
   geom_bar() + 
   coord_flip() +
   labs(x="Count",
-       y="Candidate")
+       y="Candidate",
+       title = "Tweets Per Candidate")
 
-tweets_per_candidate
+tweets_per_candidate 
+ggsave("./Plots/tweets_per_candidate_2020", device = "jpeg")
 
 #tweets over time
 tweets_over_time <- tweets %>% 
@@ -40,7 +57,8 @@ tweets_over_time <- tweets %>%
   ggplot(aes(x=month(createdDate))) +
   geom_histogram(position = "identity", bins = 10, show.legend = FALSE) 
   
-tweets_over_time  
+tweets_over_time 
+ggsave("./Plots/tweets_per_candidate_2020", device = "jpeg")
   
 # by candidate
 tweets_over_time_candidate <- tweets %>% 
@@ -49,7 +67,10 @@ tweets_over_time_candidate <- tweets %>%
   geom_histogram(position = "identity", bins = 10, show.legend = FALSE) +
   facet_wrap(~candidate, scales = "free")
 
-tweets_over_time_candidate
+tweets_over_time_candidate 
+ggsave("./Plots/tweets_over_time_candidate_2020", device = "jpeg")
+
+
 # takeaway: Andrew Yang Tweets way more than everyone else, 
 # explaining why almost all of his tweets (1500) are from 
 # the last couple months (March)
@@ -62,7 +83,8 @@ sentimentbinary <- tweets %>%
        y="Count",
        title = "Frequency of Sentiment by Sentence")
 
-sentimentbinary
+sentimentbinary 
+ggsave("./Plots/sentimentbinary_2020", device = "jpeg")
 
 # proportional sentiment by Tweet
 tweetsentimentbinary <- tweets %>% 
@@ -74,6 +96,7 @@ tweetsentimentbinary <- tweets %>%
        title = "Frequency of Sentiment by Tweet")
 
 tweetsentimentbinary
+ggsave("./Plots/tweetsentimentbinary_2020", device = "jpeg")
 
 tweetsentimentbinary_by_candidate <- tweets %>% 
   distinct(id, .keep_all = TRUE) %>% 
@@ -88,6 +111,8 @@ tweetsentimentbinary_by_candidate <- tweets %>%
        title = "Frequency of Sentiment by Tweet")
 
 tweetsentimentbinary_by_candidate
+ggsave("./Plots/tweetsentimentbinary_by_candidate_2020", device = "jpeg")
+
 
 # average sentiment by candidate
 candidate_sentiment <- tweets %>%
@@ -102,6 +127,7 @@ candidate_sentiment <- tweets %>%
   coord_flip()
 
 candidate_sentiment
+ggsave("./Plots/candidate_sentiment_2020", device = "jpeg")
 
 # specific emotion/wordsentiment by candidate
 legend_ord <- levels(with(by_candidate_sentiment, reorder(wordsentiment, -percent)))
@@ -117,7 +143,9 @@ by_candidate_sentiment_grouped <- by_candidate_sentiment %>%
   coord_flip()
 
 by_candidate_sentiment_grouped
+ggsave("./Plots/by_candidate_sentiment_grouped_2020", device = "jpeg")
 
+ 
 # the same thing but grouped by emotion with each candidate having their own bar
 by_sentiment_candidate_grouped <- by_candidate_sentiment %>% 
   group_by(candidate) %>% 
@@ -130,7 +158,9 @@ by_sentiment_candidate_grouped <- by_candidate_sentiment %>%
   ylab("Percent") +
   scale_fill_discrete(name="Candidate")
 
-by_sentiment_candidate_grouped
+by_sentiment_candidate_grouped  
+ggsave("./Plots/by_sentiment_candidate_grouped_2020", device = "jpeg")
+
 
 # interaction between sentiment and Tweet favorites
 
@@ -144,7 +174,7 @@ polarity_vs_popularity_fav <- tweets %>%
   xlab("Sentiment Score") +
   ggtitle("Relationship Between Tweet Sentiment and Favorites")
 
-polarity_vs_popularity_fav
+#polarity_vs_popularity_fav
 
 # grouped by candidate
 
@@ -159,7 +189,7 @@ polarity_vs_popularity_fav_by_candidate <- tweets %>%
   ggtitle("Relationship Between Tweet Sentiment and Favorites", 
           subtitle = "Broken down by candidate")
 
-polarity_vs_popularity_fav_by_candidate
+#polarity_vs_popularity_fav_by_candidate
 
 # faceted
 
@@ -176,7 +206,7 @@ polarity_vs_popularity_fav_faceted <- tweets %>%
   ggtitle("Relationship Between Tweet Sentiment and Favorites", 
           subtitle = "Faceted by candidate")
 
-polarity_vs_popularity_fav_faceted
+#polarity_vs_popularity_fav_faceted
 
 # and all in one plot
 
@@ -193,7 +223,7 @@ polarity_vs_popularity_fav_summarised <- tweets %>%
           subtitle = "Per Candidate") +
   theme(legend.position = "none")
 
-polarity_vs_popularity_fav_summarised
+#polarity_vs_popularity_fav_summarised
 
 # interaction between wordsentiment and retweets
 
@@ -207,7 +237,7 @@ polarity_vs_popularity_rt <- tweets %>%
   xlab("Sentiment Score") +
   ggtitle("Relationship Between Tweet Sentiment and Retweets")
 
-polarity_vs_popularity_rt
+#polarity_vs_popularity_rt
 
 # grouped by candidate
 
@@ -222,7 +252,7 @@ polarity_vs_popularity_rt_by_candidate <- tweets %>%
   ggtitle("Relationship Between Tweet Sentiment and Retweets",
           subtitle = "Broken down by candidate")
 
-polarity_vs_popularity_rt_by_candidate
+#polarity_vs_popularity_rt_by_candidate
 
 # faceted
 
@@ -239,7 +269,7 @@ polarity_vs_popularity_rt_faceted <- tweets %>%
   ggtitle("Relationship Between Tweet Sentiment and Retweets",
           subtitle = "Faceted by candidate")
 
-polarity_vs_popularity_rt_faceted
+#polarity_vs_popularity_rt_faceted
 
 # and all in one plot
 
@@ -256,21 +286,22 @@ polarity_vs_popularity_rt_summarised <- tweets %>%
           subtitle = "Per candidate") +
   theme(legend.position = "none")
 
-polarity_vs_popularity_rt_summarised
+#polarity_vs_popularity_rt_summarised
 
 polarity_vs_popularity <- tweets %>%
   distinct(id, .keep_all = TRUE) %>% 
   mutate(interactions = favoriteCount + retweetCount) %>% 
-  filter(interactions < 90000) %>% 
-  filter(sentiment<1.5) %>% 
   ggplot(aes(x=tweetlevelsentiment, y=interactions)) +
   geom_point(alpha = .05) +
   geom_smooth(method=lm, se=TRUE) +
   ylab("Number of Interactions") +
-  xlab("Sentiment Score") +
-  ggtitle("Relationship Between Tweet Sentiment and Interactions")
+  xlab("Sentiment Score") + 
+  ggtitle("Relationship Between Tweet Sentiment and Interactions") +
+  ylim(c(0,25000)) +
+  xlim(c(-1,1))
 
-polarity_vs_popularity
+polarity_vs_popularity 
+ggsave("./Plots/polarity_vs_popularity_2020", device = "jpeg")
 
 # average retweets and favs by candidate
 retweetspertweet <- tweets %>% 
@@ -285,7 +316,7 @@ retweetspertweet %>%
   geom_col(show.legend = FALSE) +
   coord_flip() +
   labs(y="Average Retweets per Tweet",
-       x=element_blank())
+       x=element_blank())  
 
 favoritespertweet <- tweets %>% 
   distinct(id, .keep_all = TRUE) %>% 
@@ -299,7 +330,7 @@ favoritespertweet %>%
   geom_col(show.legend = FALSE) +
   coord_flip() +
   labs(y="Average Favorites per Tweet",
-       x=element_blank())
+       x=element_blank()) 
 
 # determine which words are associated with greater
 # numbers of favorites and retweets
@@ -316,20 +347,20 @@ word_by_rts %>%
   filter(uses > 5) %>%
   arrange(desc(retweets))
 
-word_by_rts %>%
-  filter(uses > 5) %>%
-  group_by(candidate) %>%
-  top_n(10, retweets) %>%
-  arrange(retweets) %>%
-  ungroup() %>%
-  mutate(word = factor(word, unique(word))) %>%
-  ungroup() %>%
-  ggplot(aes(word, retweets, fill = candidate)) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ candidate, scales = "free") +
-  coord_flip() +
-  labs(x = NULL, 
-       y = "Median # of Retweets for Tweets containing each word")
+# word_by_rts %>%
+#   filter(uses > 5) %>%
+#   group_by(candidate) %>%
+#   top_n(10, retweets) %>%
+#   arrange(retweets) %>%
+#   ungroup() %>%
+#   mutate(word = factor(word, unique(word))) %>%
+#   ungroup() %>%
+#   ggplot(aes(word, retweets, fill = candidate)) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~ candidate, scales = "free") +
+#   coord_flip() +
+#   labs(x = NULL, 
+#        y = "Median # of Retweets for Tweets containing each word")
 
 word_by_favs <- tweet_words %>% 
   group_by(id, word, candidate) %>% 
@@ -344,20 +375,20 @@ word_by_favs %>%
   filter(uses > 5) %>%
   arrange(desc(favorites))
 
-word_by_favs %>%
-  filter(uses > 5) %>%
-  group_by(candidate) %>%
-  top_n(10, favorites) %>%
-  arrange(favorites) %>%
-  ungroup() %>%
-  mutate(word = factor(word, unique(word))) %>%
-  ungroup() %>%
-  ggplot(aes(word, favorites, fill = candidate)) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ candidate, scales = "free") +
-  coord_flip() +
-  labs(x = NULL, 
-       y = "Median # of Favorites for Tweets containing each word")
+# word_by_favs %>%
+#   filter(uses > 5) %>%
+#   group_by(candidate) %>%
+#   top_n(10, favorites) %>%
+#   arrange(favorites) %>%
+#   ungroup() %>%
+#   mutate(word = factor(word, unique(word))) %>%
+#   ungroup() %>%
+#   ggplot(aes(word, favorites, fill = candidate)) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~ candidate, scales = "free") +
+#   coord_flip() +
+#   labs(x = NULL, 
+#        y = "Median # of Favorites for Tweets containing each word")
 
 word_by_interactions <- tweet_words %>% 
   group_by(id, word, candidate) %>% 
@@ -383,6 +414,8 @@ word_by_interactions %>%
   labs(x = NULL, 
        y = "Median # of Interactions for Tweets containing each word")
 
+ggsave("./Plots/words_by_interactions_candidate_2020", device = "jpeg")
+
 word_by_interactions %>%
   filter(uses > 5) %>%
   top_n(10, interactions) %>%
@@ -395,6 +428,8 @@ word_by_interactions %>%
   coord_flip() +
   labs(x = NULL, 
        y = "Median # of Interactions for Tweets containing each word")
+
+ggsave("./Plots/words_by_interactions_2020", device = "jpeg")
 
 # note for above: look at Joe Biden's repeated use of the phrase "battle for the soul of this nation" lol
 # https://twitter.com/search?q=battle%20from%3AJoeBiden&src=typd
@@ -409,26 +444,26 @@ candidate_retweets_by_sentiment <- tweet_words_w_nrc %>%
   ungroup()
 
 # broken down by candidate
-candidate_retweets_by_sentiment %>% 
-  group_by(candidate) %>% 
-  ggplot(aes(x=reorder(wordsentiment, retweets), y=retweets, fill=wordsentiment)) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ candidate, scales = "free") +
-  coord_flip() +
-  ylab("Average # of Retweets") +
-  xlab(element_blank()) +
-  ggtitle("Popularity of Tweet Sentiments")
+# candidate_retweets_by_sentiment %>% 
+#   group_by(candidate) %>% 
+#   ggplot(aes(x=reorder(wordsentiment, retweets), y=retweets, fill=wordsentiment)) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~ candidate, scales = "free") +
+#   coord_flip() +
+#   ylab("Average # of Retweets") +
+#   xlab(element_blank()) +
+#   ggtitle("Popularity of Tweet Sentiments")
 
 #combined  
-candidate_retweets_by_sentiment %>% 
-  group_by(wordsentiment) %>% 
-  summarise(meanretweets = mean(retweets)) %>% 
-  ggplot(aes(x=reorder(wordsentiment, meanretweets), y=meanretweets, fill=wordsentiment)) +
-  geom_col(show.legend = FALSE) +
-  coord_flip()+
-  ylab("Average # of Retweets") +
-  xlab(element_blank()) +
-  ggtitle("Popularity of Tweet Sentiments")
+# candidate_retweets_by_sentiment %>% 
+#   group_by(wordsentiment) %>% 
+#   summarise(meanretweets = mean(retweets)) %>% 
+#   ggplot(aes(x=reorder(wordsentiment, meanretweets), y=meanretweets, fill=wordsentiment)) +
+#   geom_col(show.legend = FALSE) +
+#   coord_flip()+
+#   ylab("Average # of Retweets") +
+#   xlab(element_blank()) +
+#   ggtitle("Popularity of Tweet Sentiments")
 
 candidate_favorites_by_sentiment <- tweet_words_w_nrc %>%
   group_by(id, wordsentiment, candidate) %>% 
@@ -437,25 +472,25 @@ candidate_favorites_by_sentiment <- tweet_words_w_nrc %>%
   summarise(favorites = mean(favs), uses = n()) %>% 
   ungroup() 
 
-candidate_favorites_by_sentiment %>% 
-  group_by(candidate) %>% 
-  ggplot(aes(x=reorder(wordsentiment, favorites), y=favorites, fill=wordsentiment)) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ candidate, scales = "free") +
-  coord_flip() +
-  ylab("Average # of Favorites") +
-  xlab(element_blank()) +
-  ggtitle("Popularity of Tweet Sentiments")
+# candidate_favorites_by_sentiment %>% 
+#   group_by(candidate) %>% 
+#   ggplot(aes(x=reorder(wordsentiment, favorites), y=favorites, fill=wordsentiment)) +
+#   geom_col(show.legend = FALSE) +
+#   facet_wrap(~ candidate, scales = "free") +
+#   coord_flip() +
+#   ylab("Average # of Favorites") +
+#   xlab(element_blank()) +
+#   ggtitle("Popularity of Tweet Sentiments")
 
-candidate_favorites_by_sentiment %>% 
-  group_by(wordsentiment) %>% 
-  summarise(meanfavorites = mean(favorites)) %>% 
-  ggplot(aes(x=reorder(wordsentiment, meanfavorites), y=meanfavorites, fill=wordsentiment)) +
-  geom_col(show.legend = FALSE) +
-  coord_flip() +
-  ylab("Average # of Favorites") +
-  xlab(element_blank()) +
-  ggtitle("Popularity of Tweet Sentiments")
+# candidate_favorites_by_sentiment %>% 
+#   group_by(wordsentiment) %>% 
+#   summarise(meanfavorites = mean(favorites)) %>% 
+#   ggplot(aes(x=reorder(wordsentiment, meanfavorites), y=meanfavorites, fill=wordsentiment)) +
+#   geom_col(show.legend = FALSE) +
+#   coord_flip() +
+#   ylab("Average # of Favorites") +
+#   xlab(element_blank()) +
+#   ggtitle("Popularity of Tweet Sentiments")
 
 candidate_interactions_by_sentiment <- tweet_words_w_nrc %>%
   group_by(id, wordsentiment, candidate) %>% 
@@ -475,6 +510,8 @@ candidate_interactions_by_sentiment %>%
   xlab(element_blank()) +
   ggtitle("Popularity of Tweet Sentiments")
 
+ggsave("./Plots/sentiment_by_interactions_candidate_2020", device = "jpeg")
+
 candidate_interactions_by_sentiment %>% 
   group_by(wordsentiment) %>% 
   summarise(meaninteractions = mean(interactions)) %>% 
@@ -484,6 +521,8 @@ candidate_interactions_by_sentiment %>%
   ylab("Average # of Interactions") +
   xlab(element_blank()) +
   ggtitle("Popularity of Tweet Sentiments")
+
+ggsave("./Plots/sentiment_by_interactions_2020", device = "jpeg")
 
 ## Major Takeaway: Negative sentiments--like disgust, anger, sadness, and fear sell.
 ## These emotions garner more retweets and favorites than positive sentiments
@@ -500,7 +539,8 @@ sentiment_by_trump_mention <- tweets %>%
   xlab(element_blank()) +
   scale_x_continuous(breaks=c(0,1), labels = c("Does Not Mention", "Does Mention"))
   
-sentiment_by_trump_mention
+sentiment_by_trump_mention 
+ggsave("./Plots/sentiment_by_trump_mention_2020", device = "jpeg")
 
 # Who is most likely to mention Trump?
 
@@ -515,7 +555,10 @@ tweets %>%
   xlab(element_blank()) +
   ylab("Percent of Tweets Mentioning Trump") +
   ggtitle("Candidate Frequency of Mentioning Trump") +
-  coord_flip()
+  coord_flip() 
+
+ggsave("./Plots/trump_mention_2020", device = "jpeg")
+
 
 # To do: How does wordsentiment change when Tweets mention Trump?
 
@@ -535,27 +578,30 @@ trump_w_sentiment <- tweet_words_w_nrc %>%
        title = "Sentiment as a Proportion of Overall Tweets", 
        subtitle = "Comparing Tweets mentioning Trump with those that don't")
   
-trump_w_sentiment
+trump_w_sentiment 
+
+ggsave("./Plots/trump_w_sentiment_2020", device = "jpeg")
+
   
 # To do: plot relationship between current polling numbers and Tweet wordsentiment/favs/rts/etc.
 # nvm this analysis is stupid
-poll_vs_tweets <- tweets %>% 
-  group_by(polling) %>% 
-  summarise(favoriteCount = mean(favoriteCount)) %>% 
-  ggplot(aes(x=polling, y=favoriteCount)) +
-  geom_point() +
-  geom_smooth(method=lm, se=FALSE)
-
-poll_vs_tweets
-
-tweet_words_w_nrc %>% 
-group_by(polling, wordsentiment) %>% 
-  summarise(n = n()) %>% 
-  mutate(percentsentiment = 100*(n/sum(n))) %>% 
-  ggplot(aes(x=polling, y=percentsentiment)) +
-  geom_point() +
-  facet_wrap(~ wordsentiment, scales = "free")
-  
+# poll_vs_tweets <- tweets %>% 
+#   group_by(polling) %>% 
+#   summarise(favoriteCount = mean(favoriteCount)) %>% 
+#   ggplot(aes(x=polling, y=favoriteCount)) +
+#   geom_point() +
+#   geom_smooth(method=lm, se=FALSE)
+# 
+# #poll_vs_tweets
+# 
+# tweet_words_w_nrc %>% 
+# group_by(polling, wordsentiment) %>% 
+#   summarise(n = n()) %>% 
+#   mutate(percentsentiment = 100*(n/sum(n))) %>% 
+#   ggplot(aes(x=polling, y=percentsentiment)) +
+#   geom_point() +
+#   facet_wrap(~ wordsentiment, scales = "free")
+#   
 
 # To do: does mentioning trump affect affect retweets/favs?
 # see https://www-sciencedirect-com.ezproxy.rice.edu/science/article/pii/S2468696417301088#fig0010
@@ -573,7 +619,7 @@ trump_w_favs <- tweets %>%
        title = "Average Tweet Popularity", 
        subtitle = "Comparing Tweets mentioning Trump with those that don't") 
 
-trump_w_favs
+#trump_w_favs
 
 trump_w_rts <- tweets %>% 
   distinct(id, .keep_all = TRUE) %>% 
@@ -588,7 +634,7 @@ trump_w_rts <- tweets %>%
        title = "Average Tweet Popularity", 
        subtitle = "Comparing Tweets mentioning Trump with those that don't") 
 
-trump_w_rts
+#trump_w_rts
 
 trump_w_interactions <- tweets %>% 
   distinct(id, .keep_all = TRUE) %>% 
@@ -604,7 +650,8 @@ trump_w_interactions <- tweets %>%
        title = "Average Tweet Popularity", 
        subtitle = "Comparing Tweets mentioning Trump with those that don't") 
 
-trump_w_interactions
+trump_w_interactions 
+ggsave("./Plots/trump_w_interactions_2020", device = "jpeg")
 
 # how often do candidates talk about women's issues?
 women_tweets <- tweets %>% 
@@ -619,4 +666,6 @@ women_tweets <- tweets %>%
   ylab("Mentions")  +
   coord_flip()
 
-women_tweets
+women_tweets 
+ggsave("./Plots/women_tweets_2020", device = "jpeg")
+

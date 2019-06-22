@@ -38,6 +38,20 @@ tweets_w_no_sentences <- tweets %>%
   distinct(id, .keep_all = TRUE) %>% 
   mutate(interactions = favoriteCount + retweetCount)
   
+summary(lm(interactions ~ distancefromzero, data=tweets_w_no_sentences))
 summary(lm(interactions ~ sentiment, data=tweets_w_no_sentences))
 summary(lm(favoriteCount ~ sentiment, data=tweets_w_no_sentences))
 summary(lm(retweetCount ~ sentiment, data=tweets_w_no_sentences))
+
+summary(m1 <- glm(interactions ~ tweetlevelsentiment, family="poisson", data=tweets))
+tweets$phat <- predict(m1, type="response")
+tweets <- tweets[with(tweets, order(tweetlevelsentiment)), ]
+
+tweets %>% 
+  distinct(id, .keep_all=TRUE) %>% 
+  ggplot(aes(x = tweetlevelsentiment, y = phat)) +
+  geom_point(aes(y = interactions), alpha=.05) +
+  geom_line(size = 1) +
+  labs(x = "Sentiment", y = "Tweet Interactions") +
+  xlim(c(-1,1)) +
+  ylim(c(0,25000))

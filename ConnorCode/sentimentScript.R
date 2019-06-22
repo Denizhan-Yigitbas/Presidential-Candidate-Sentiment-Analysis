@@ -63,7 +63,8 @@ tweets <- cleanedtweets %>%
   select(candidate, id, tweet, text, sentiment, sentimentbinary, 
          tweetlevelsentiment, tweetsentimentbinary, distancefromzero,
          favoriteCount, retweetCount, createdDate, mentiontrump,
-         element_id, sentence_id, word_count)
+         element_id, sentence_id, word_count) %>% 
+  mutate(interactions = retweetCount + favoriteCount)
 
 summary(tweets)
 
