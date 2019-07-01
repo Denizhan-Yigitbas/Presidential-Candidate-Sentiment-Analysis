@@ -89,5 +89,5 @@ if __name__ == '__main__':
                 for2016()
 
     else:
-        print('Please enter a flag: Use main.py -h for assistence')
+        print('Please enter a flag: Use main.py -h for assistance')
 
