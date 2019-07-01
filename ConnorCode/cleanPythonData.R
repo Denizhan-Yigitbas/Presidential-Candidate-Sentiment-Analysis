@@ -23,9 +23,16 @@ library(tm)
 library(stm)
 library(quanteda)
 
-#in actual,"customTwitterUsersCombinedUncleaned.csv" not "sampleSet.csv"
+#for testing, use "sampleSet.csv"
 #uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
 uncleaned <- read_csv("customTwitterUsersCombinedUncleaned.csv")
+july1 <- read_csv("~/Desktop/R/Presidential-Candidate-Sentiment-Analysis/DenizhanCode/twitterUsersRaw.csv")
+july1 <- july1 %>% 
+  select(-polarity)
+
+uncleaned <- rbind(uncleaned, july1)
+uncleaned <- uncleaned %>% 
+  distinct(id, .keep_all = TRUE)
 
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 
