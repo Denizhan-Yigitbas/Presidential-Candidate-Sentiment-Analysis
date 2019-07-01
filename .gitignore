@@ -7,3 +7,16 @@ DenizhanCode/__pycache__/
 DenizhanCode/finalDataSet_2016.csv
 DenizhanCode/twitterUsersRaw.csv
 ConnorCode/customTwitterUsersCombinedUncleaned.csv
+ConnorCode/customTwitterUsersCombinedCleaned.csv
+ConnorCode/datatest.csv
+ConnorCode/finalDataSet_2016.csv
+ConnorCode/finalDataSet_rCleaned.csv
+ConnorCode/Plots/
+ConnorCode/rsconnect/
+ConnorCode/tweets_w_sentiment.csv
+ConnorCode/tweetsfortableaureal.csv
+ConnorCode/.RData
+ConnorCode/.Rhistory
+ConnorCode/.Rproj.user/
+ConnorCode/.httr-oauth
+DenizhanCode/TwitterUser.pyc
