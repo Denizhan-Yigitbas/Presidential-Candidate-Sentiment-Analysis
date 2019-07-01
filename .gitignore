@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .DS_Store
 .idea/
 
@@ -7,9 +6,3 @@ DenizhanCode/Viz/
 DenizhanCode/__pycache__/
 DenizhanCode/finalDataSet_2016.csv
 DenizhanCode/twitterUsersRaw.csv
-=======
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
->>>>>>> ce1eb9053ee442fa6a7351c75279368adc339620
