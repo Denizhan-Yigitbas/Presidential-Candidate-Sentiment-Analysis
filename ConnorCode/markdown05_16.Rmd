@@ -4,12 +4,13 @@ author: "Connor Rothschild and Denizhan Yigitbas"
 date: "5/16/2019"
 output: 
   html_document:
+    code_folding: hide
     toc: true
     toc_float: true
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
                       out.width='1000px', out.height='600px', dpi=200)
 ```
 
@@ -52,6 +53,22 @@ library(tm)
 library(stm)
 library(quanteda)
 library(knitr)
+```
+
+```{r setup2, include = FALSE}
+theme_cr <- function () {
+  theme_bw(base_size=12, base_family="sans") %+replace% 
+    theme(axis.ticks = element_line(colour = "black"), 
+          legend.key = element_rect(colour = "grey80"), 
+          panel.background = element_blank(), 
+          panel.border = element_blank(), 
+          panel.grid.major = element_line(colour = "grey90", size = 0.2), 
+          panel.grid.minor = element_line(colour = "grey98", size = 0.5), 
+          strip.background = element_rect(fill = "grey80", colour = "grey50", 
+                                          size = 0.2))
+}
+
+theme_set(theme_cr())
 ```
 
 ## Data Collection
@@ -305,12 +322,15 @@ word_by_interactions %>%
   top_n(10, interactions) %>%
   arrange(interactions) %>%
   ungroup() %>%
-  mutate(word = factor(word, unique(word))) %>%
+  mutate(word = factor(word, unique(word)),
+         candidate = as.factor(candidate),
+         word = tidytext::reorder_within(word, interactions, candidate)) %>% 
   ungroup() %>%
   ggplot(aes(word, interactions, fill = candidate)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ candidate, scales = "free") +
   coord_flip() +
+  scale_x_reordered() +
   labs(x = NULL, 
        y = "Median # of Interactions for Tweets containing each word",
        title = "Most Popular Words Used on Twitter") +
@@ -351,11 +371,13 @@ candidate_interactions_by_sentiment <- tweet_words_w_nrc %>%
   ungroup() 
 
 candidate_interactions_by_sentiment %>% 
-  group_by(candidate) %>% 
-  ggplot(aes(x=reorder(wordsentiment, interactions), y=interactions, fill=wordsentiment)) +
+  mutate(candidate = as.factor(candidate),
+         wordsentiment = reorder_within(wordsentiment, interactions, candidate)) %>%
+  ggplot(aes(x=wordsentiment, y=interactions, fill=candidate)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~ candidate, scales = "free_x") +
+  facet_wrap(~ candidate, scales = "free") +
   coord_flip() +
+  scale_x_reordered() +
   ylab("Average # of Interactions") +
   xlab(element_blank()) +
   ggtitle("Popularity of Tweet Sentiments") +

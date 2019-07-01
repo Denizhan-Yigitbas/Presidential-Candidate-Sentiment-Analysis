@@ -405,14 +405,21 @@ word_by_interactions %>%
   top_n(10, interactions) %>%
   arrange(interactions) %>%
   ungroup() %>%
-  mutate(word = factor(word, unique(word))) %>%
+  mutate(word = factor(word, unique(word)),
+         candidate = as.factor(candidate),
+         word = tidytext::reorder_within(word, interactions, candidate)) %>% 
   ungroup() %>%
   ggplot(aes(word, interactions, fill = candidate)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ candidate, scales = "free") +
   coord_flip() +
+  scale_x_reordered() +
   labs(x = NULL, 
-       y = "Median # of Interactions for Tweets containing each word")
+       y = "Median # of Interactions for Tweets containing each word",
+       title = "Most Popular Words Used on Twitter") +
+  theme(axis.text.x = element_text(size = 6, angle = 20),
+        axis.text.y = element_text(size = 5),
+        strip.text.x = element_text(size = 8))
 
 ggsave("./Plots/words_by_interactions_candidate_2020", device = "jpeg")
 
@@ -501,14 +508,18 @@ candidate_interactions_by_sentiment <- tweet_words_w_nrc %>%
   ungroup() 
 
 candidate_interactions_by_sentiment %>% 
-  group_by(candidate) %>% 
-  ggplot(aes(x=reorder(wordsentiment, interactions), y=interactions, fill=wordsentiment)) +
+  mutate(candidate = as.factor(candidate),
+         wordsentiment = reorder_within(wordsentiment, interactions, candidate)) %>%
+  ggplot(aes(x=wordsentiment, y=interactions, fill=candidate)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ candidate, scales = "free") +
   coord_flip() +
+  scale_x_reordered() +
   ylab("Average # of Interactions") +
   xlab(element_blank()) +
-  ggtitle("Popularity of Tweet Sentiments")
+  ggtitle("Popularity of Tweet Sentiments") +
+  theme(axis.text.x = element_text(size = 6, angle = 20),
+        axis.text.y = element_text(size = 6))
 
 ggsave("./Plots/sentiment_by_interactions_candidate_2020", device = "jpeg")
 
