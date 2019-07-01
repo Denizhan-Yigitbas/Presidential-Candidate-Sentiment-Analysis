@@ -1,0 +1,8 @@
+.DS_Store
+.idea/
+
+DenizhanCode/.idea/
+DenizhanCode/Viz/
+DenizhanCode/__pycache__/
+DenizhanCode/finalDataSet_2016.csv
+DenizhanCode/twitterUsersRaw.csv
