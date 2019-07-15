@@ -105,8 +105,6 @@ by_candidate_sentiment <- tweet_words_w_nrc %>%
   mutate(percent = (100*(words/total_words))) %>% 
   ungroup()
 
-by_candidate_sentiment
-
 ### PRIMARY DATASETS:
 tweets
 tweet_words

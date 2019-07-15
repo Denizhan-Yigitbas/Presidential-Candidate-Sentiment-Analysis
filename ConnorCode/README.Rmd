@@ -2,20 +2,14 @@
 title: "Following the Race: Using Sentiment Analysis to Explore the Twitter Feeds of Presidential Candidates"
 author: "Connor Rothschild and Denizhan Yigitbas"
 date: "5/16/2019"
-output: 
-  html_document:
-    code_folding: hide
-    toc: true
-    toc_float: true
+output: github_document
+editor_options:
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, 
                       out.width='1000px', out.height='600px', dpi=200)
-```
-
-```{rcpp, include=FALSE}
-<base target="_top"/>
 ```
 
 The R code for this post can be found [here](https://github.com/Denizhan-Yigitbas/Presidential-Candidate-Sentiment-Analysis/blob/master/markdown05_16.Rmd). A less technical version of this post without code snippets can be found [here](https://www.connorrothschild.com/single-post/2019/05/21/following-the-race).
@@ -48,7 +42,6 @@ library(broom)
 library(cleanNLP)
 library(textclean)
 library(ggrepel)
-library(topicmodels)
 library(tm)
 library(stm)
 library(quanteda)
@@ -183,19 +176,25 @@ Let's add sentiment to the dataset:
 tweets <- cleanedtweets %>%
   sentimentr::get_sentences() %>% 
   sentimentr::sentiment(polarity_dt = lexicon::hash_sentiment_jockers_rinker,
-                        valence_shifters_dt = lexicon::hash_valence_shifters) %>% 
+                        valence_shifters_dt = lexicon::hash_valence_shifters) 
+
+tweets <- tweets %>% 
   group_by(element_id) %>% 
   mutate(text = add_comma_space(text)) %>% 
   mutate(tweet = paste(text, collapse=" ")) %>% 
   ungroup() %>% 
   mutate(mentiontrump = ifelse(str_detect(tweet, "Trump")==TRUE,yes=1,no=0)) %>% 
   mutate(text = replace_white(text)) %>% 
-  mutate(tweet = replace_white(tweet)) %>% 
+  mutate(tweet = replace_white(tweet)) 
+
+tweets <- tweets %>% 
   group_by(tweet) %>% 
   mutate(tweetlevelsentiment = mean(sentiment)) %>% 
   ungroup %>% 
   filter(!is.na(word_count)) %>% 
-  filter(text!=" ")  %>% 
+  filter(text!=" ") 
+
+tweets <- tweets %>% 
   mutate(sentimentbinary = ifelse(sentiment>0,"Positive", 
                             ifelse(sentiment<0,"Negative","Neutral"))) %>% 
   mutate(tweetsentimentbinary = ifelse(tweetlevelsentiment>0,"Positive",
@@ -221,6 +220,7 @@ The above code creates a few variables to determine sentiment:
 ## Sentence- and Tweet-Level Sentiment Analysis
 
 First, we can explore overall sentiment by depicting what proportion of sentences fall into the categories of *negative* (sentiment < 0), *positive* (sentiment > 0), or *neutral* (sentiment = 0).
+
 ```{r sentiment overview}
 tweets %>% 
   ggplot(aes(x=sentimentbinary, fill=sentimentbinary)) +
@@ -287,6 +287,8 @@ We use the [NRC Word-Emotion Association Lexicon](http://saifmohammad.com/WebPag
 
 We create the *tweet_words* dataset with the *[unnest_tokens](http://www.rdocumentation.org/packages/tidytext/versions/0.2.0/topics/unnest_tokens)* function found in the *[tidytext package](http://www.rdocumentation.org/packages/tidytext)*. We then inner join the dataset to the NRC lexicon under the name *tweet_words_w_nrc*.
 
+**EDIT: since the release of this post, tidytext has removed sentiment lexicons from their packages for reasons of licensing permissions (see Silge's [post explaining tidytext 0.2.1](https://juliasilge.com/blog/sentiment-lexicons/)). Although other lexicons found via R packages are still available, [NRC is not](http://saifmohammad.com/WebPages/lexicons.html#terms). As a result, our analysis will now rely on the Bing lexicon as it is the default (only) lexicon within the tidytext package.**
+
 ``` {r create tweet_words}
 reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 tweet_words <- tweets %>% 
@@ -294,9 +296,9 @@ tweet_words <- tweets %>%
   filter(!word %in% stop_words$word,
          str_detect(word, "[a-z]"))
 
-nrc <- sentiments %>%
-  filter(lexicon == "nrc") %>%
-  select(word, sentiment)
+nrc <- sentiments #%>%
+  #filter(lexicon == "nrc") %>%
+  #select(word, sentiment)
 colnames(nrc)[colnames(nrc)=="sentiment"] <- "wordsentiment"
 
 tweet_words_w_nrc <- tweet_words %>%
