@@ -529,7 +529,7 @@ tweets %>%
 
 Joe Biden, who pitches himself as a moderate and will likely see electoral success by engaging "Never Trump" voters and moderate conservatives, mentions Trump much less frequently than more "radical" candidates like Bernie Sanders.
 
-Next, how does sentiment change in Tweets that mention Trump compared to those that don't?
+Next, how does sentiment change in Tweets that mention Trump compared to those that don't? 
 
 ``` r
 tweets %>% 
